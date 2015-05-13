@@ -11,7 +11,7 @@
 #include <cassert>
 
 /**
- * 文字列を破壊的に反転
+ * 文字列の空白文字を置換
  * @param[in,out]	string	入力文字列・出力文字列 (空文字列は認めない)
  * @param[in]	to	空白文字を置換する文字列 (空文字列は認めない)
  * @note	引数 @a string で利用可能なメモリ領域は置換後の文字列長より広いと仮定する。
@@ -35,7 +35,7 @@ replace_ws(char* string,
 	int j = sl + c * (tl - 1) - 1;
 	string[j+1] = '\0';
 
-	for (int i(sl - 1); 0 <= i && 0 <= j; --i) {
+	for (int i(sl - 1); 0 <= i; --i) {
 		if (string[i] != ' ') {
 			string[j] = string[i];
 			--j;
