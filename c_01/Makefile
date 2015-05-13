@@ -13,7 +13,7 @@ CFLAGS	:= -Wall
 check: $(EXECUTE)
 	@for e in $^ ; do \
 		if [ -e $${e} ]; then \
-			printf "#execute: $${e}\n"; \
+			printf "# execute: $${e}\n"; \
 			./$${e}; \
 		fi \
 	done
