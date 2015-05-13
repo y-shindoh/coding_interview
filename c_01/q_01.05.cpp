@@ -63,6 +63,8 @@ replaced_string(char* string)
 	size_t m(1);
 	std::vector<char> letters;	// 逐次上書きを避ける
 	std::vector<int> counts;	// 逐次上書きを避ける
+	letters.reserve(l / 2);
+	counts.reserve(l / 2);
 
 	for (size_t i(0); i <= l; ++i) {
 		if (c == string[i]) {
