@@ -90,7 +90,12 @@ public:
  */
 int main()
 {
+	////////////////////////////////////////////////////////////
+	// - 大文字と小文字は区別する。
+	// - US-ASCIIの全ての文字を処理対象とする。
+	// - 文字列長が異なれば、入れ替えでは同一の文字列に変換できない。
 	char sample[][16] = {"AbCdBC.", "AbcdBC.", "CdB.bCA"};
+
 	LetterChecker<unsigned char>* checker[] = {0, 0, 0};
 	const size_t l = sizeof(checker)/sizeof(checker[0]);
 
