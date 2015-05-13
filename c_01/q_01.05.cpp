@@ -14,6 +14,7 @@
  * 文字列圧縮後の長さの算出
  * @param[in]	string	圧縮対象の文字列
  * @note	圧縮方法は "aaabbcaaa" => "a3b2c1a3" というもの。
+ * @note	対象は US-ASCII のみとする。
  */
 size_t
 replaced_string_length(const char* string)
@@ -49,6 +50,7 @@ replaced_string_length(const char* string)
  * @param[in,out]	string	圧縮対象の文字列
  * @note	圧縮方法は "aaabbcaaa" => "a3b2c1a3" というもの。
  * @note	先頭・末尾からの逐次上書きは "ababccccccccccccccabab" などで失敗する。
+ * @note	対象は US-ASCII のみとする。
  */
 void
 replaced_string(char* string)
@@ -78,9 +80,10 @@ replaced_string(char* string)
 
 	const size_t n = letters.size();
 	string[0] = '\0';
+	m = 0;
 
 	for (size_t i(0); i < n; ++i) {
-		m = std::strlen(string);
+		while (string[m]) ++m;
 		string[m++] = letters[i];
 		std::sprintf(string+m, "%d", counts[i]);
 	}
@@ -92,7 +95,7 @@ replaced_string(char* string)
 int main()
 {
 	char buffer[][1024] = {"aabcccccaaa",
-						   "aabcccccaaaeeeeeeeeee"};
+						   "aabcccccaaaeeeeeeeeeed"};
 	size_t length;
 
 	for (size_t i(0); i < sizeof(buffer)/sizeof(buffer[0]); ++i) {
