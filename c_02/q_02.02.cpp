@@ -8,12 +8,14 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <cassert>
 #include "list.hpp"
 
 /**
  * リストの末尾からn番目の要素を取得
  * @param[in]	head	リストの先頭ノード
- * @param[in]	n	指定する位置
+ * @param[in]	n	指定する位置 (1以上)
+ * @return	リストの末尾からn番目の要素
  * @note	テンプレートの型 @a TYPE はリストのキーの型。
  * @note	テンプレートの数値 @a N は引数 @a n より大きな数字。
  * @note	計算量はO(n)となる。ただしこのnはリストの長さとする。
@@ -21,11 +23,14 @@
 template<typename TYPE, size_t N>
 const Node<TYPE>*
 DeleteTailNode(const Node<TYPE>* node,
-			   size_t n = 0)
+			   size_t n = 1)
 {
 	const Node<TYPE>* pointers[N];
 	size_t l(0);
 	size_t i;
+
+	assert(n <= N);
+	assert(0 < n);
 
 	while (node) {
 		i = l++ % n;
