@@ -18,11 +18,27 @@ class Node
 {
 private:
 
-	TYPE key_;			///< ノードのキー
-	Node<TYPE>* next_;	///< 次のノード (次がなければ @a 0 )
+	TYPE key_;				///< ノードのキー
+#ifdef	USE_DOUBLY_LINKED_LIST
+	Node<TYPE>* previous_;	///< 前のノード (前がなければ @a 0 )
+#endif	// USE_DOUBLY_LINKED_LIST
+	Node<TYPE>* next_;		///< 次のノード (次がなければ @a 0 )
 
 public:
 
+#ifdef	USE_DOUBLY_LINKED_LIST
+	/**
+	 * コンストラクタ
+	 * @param[in]	key	ノードのキー
+	 */
+	Node(const TYPE& key,
+		 Node<TYPE>* previous = 0,
+		 Node<TYPE>* next = 0)
+		: key_(key), previous_(previous), next_(next)
+		{
+			;
+		}
+#else	// USE_DOUBLY_LINKED_LIST
 	/**
 	 * コンストラクタ
 	 * @param[in]	key	ノードのキー
@@ -33,6 +49,7 @@ public:
 		{
 			;
 		}
+#endif	// USE_DOUBLY_LINKED_LIST
 
 	/**
 	 * キーの設定
@@ -53,6 +70,28 @@ public:
 		{
 			return key_;
 		}
+
+#ifdef	USE_DOUBLY_LINKED_LIST
+	/**
+	 * 前のノードの設定
+	 * @param[in]	前のノード
+	 */
+	void
+	set_previous(Node<TYPE>* node)
+		{
+			previous_ = node;
+		}
+
+	/**
+	 * 前のノードの取得
+	 * @return	前のノード
+	 */
+	Node<TYPE>*
+	get_previous() const
+		{
+			return previous_;
+		}
+#endif	// USE_DOUBLY_LINKED_LIST
 
 	/**
 	 * 次のノードの設定
@@ -90,7 +129,12 @@ public:
 
 			for (size_t i(0); i < length; ++i) {
 				current = new Node<TYPE>(keys[i]);
-				if (previous) previous->set_next(current);
+				if (previous) {
+#ifdef	USE_DOUBLY_LINKED_LIST
+					current->set_previous(previous);
+#endif	// USE_DOUBLY_LINKED_LIST
+					previous->set_next(current);
+				}
 				if (!head) head = current;
 				previous = current;
 			}
