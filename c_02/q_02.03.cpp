@@ -18,7 +18,7 @@
  * @note	計算量はO(1)となる。
  */
 template<typename TYPE>
-bool
+void
 DeleteCenterNode(Node<TYPE>* node)
 {
 	assert(node);
