@@ -1,14 +1,20 @@
 # -*- tab-width: 4 -*-
 
-SOURCE	:= $(sort $(wildcard *.cpp))
-EXECUTE	:= $(patsubst %.cpp,%.exe,$(SOURCE))
+SOURCE	:= $(sort $(wildcard *.c) $(wildcard *.cpp))
+EXECUTE	:= $(patsubst %.cpp,%.exe,$(patsubst %.c,%.exe,$(SOURCE)))
 
-CXX		:= clang++
-CFLAGS	:= -Wall
+CC			:= clang
+CXX			:= clang++
+CFLAGS		:= -Wall -std=c99
+CXXFLAGS	:= -Wall -std=c++98
+
+%.exe : %.c
+	# create: $@
+	$(CC) $(CFLAGS) $< -o $@
 
 %.exe : %.cpp
 	# create: $@
-	$(CXX) $(CFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 check: $(EXECUTE)
 	@for e in $^ ; do \
