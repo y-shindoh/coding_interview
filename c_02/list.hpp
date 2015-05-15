@@ -18,7 +18,7 @@ class Node
 {
 private:
 
-	const TYPE key_;	///< ノードのキー
+	TYPE key_;			///< ノードのキー
 	Node<TYPE>* next_;	///< 次のノード (次がなければ @a 0 )
 
 public:
@@ -32,6 +32,16 @@ public:
 		: key_(key), next_(next)
 		{
 			;
+		}
+
+	/**
+	 * キーの設定
+	 * @param[in]	ノードのキー
+	 */
+	void
+	set_key(const TYPE& key)
+		{
+			key_ = key;
 		}
 
 	/**
