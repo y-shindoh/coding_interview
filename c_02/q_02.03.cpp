@@ -38,8 +38,7 @@ DeleteCenterNode(Node<TYPE>* node)
  */
 int main()
 {
-	//int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
-	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1, 3, 5};
+	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
 	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
 
 	Node<int>::Print(stdout, list);
