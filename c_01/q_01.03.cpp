@@ -24,6 +24,7 @@ class LetterChecker
 private:
 
 	std::vector<TYPE> buffer_;	///< 各文字のカウント
+	size_t number_of_types_;	///< 文字種のカウント
 
 public:
 
@@ -31,6 +32,7 @@ public:
 	 * コンストラクタ
 	 */
 	LetterChecker()
+		: number_of_types_(0)
 		{
 			buffer_.resize((size_t)0x100, (TYPE)0);
 		}
@@ -45,6 +47,7 @@ public:
 			size_t j;
 			for (size_t i(0); string[i]; ++i) {
 				j = 0xFF & (size_t)string[i];	// 冗長?
+				if (!buffer_[j]) ++number_of_types_;
 				buffer_[j]++;
 				assert(buffer_[j] < (TYPE)~(TYPE)0);
 			}
@@ -61,6 +64,8 @@ public:
 	bool
 	equal(const LetterChecker<TYPE>* other) const
 		{
+			if (number_of_types_ != other->number_of_types_) return false;
+
 			for (size_t i(0); i < (size_t)0x100; ++i) {
 				if (buffer_[i] != other->buffer_[i]) return false;
 			}

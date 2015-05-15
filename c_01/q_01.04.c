@@ -1,14 +1,15 @@
 /* -*- coding: utf-8; tab-width: 4 -*- */
 /**
- * @file	q_01.04.cpp
+ * @file	q_01.04.c
  * @brief	「世界で闘うプログラミング力を鍛える150問」の問題1.4の回答
  * @author	Yasutaka SHINDOH / 新堂 安孝
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
-#include <cstdio>
-#include <cstring>
-#include <cassert>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 /**
  * 文字列の空白文字を置換
@@ -20,14 +21,14 @@ void
 replace_ws(char* string,
 		   const char* to)
 {
-	const int sl = (int)std::strlen(string);
-	const int tl = (int)std::strlen(to);
-	int c(0);
+	const int sl = (int)strlen(string);
+	const int tl = (int)strlen(to);
 
 	assert(0 < sl);
 	assert(0 < tl);
 
-	for (int i(0); i < sl; ++i) {
+	int c = 0;
+	for (int i = 0; i < sl; ++i) {
 		if (string[i] != ' ') continue;
 		++c;
 	}
@@ -35,13 +36,13 @@ replace_ws(char* string,
 	int j = sl + c * (tl - 1) - 1;
 	string[j+1] = '\0';
 
-	for (int i(sl - 1); 0 <= i; --i) {
+	for (int i = sl - 1; 0 <= i; --i) {
 		if (string[i] != ' ') {
 			string[j] = string[i];
 			--j;
 		}
 		else {
-			for (int k(tl-1); 0 <= k; --k) {
+			for (int k = tl - 1; 0 <= k; --k) {
 				string[j] = to[k];
 				--j;
 			}
@@ -56,9 +57,9 @@ int main()
 {
 	char buffer[1024] = "012 34 5 6789.";
 
-	std::printf("BEFORE:\t'%s'\n", buffer);
+	printf("BEFORE:\t'%s'\n", buffer);
 	replace_ws(buffer, "%20");
-	std::printf("AFTER:\t'%s'\n", buffer);
+	printf("AFTER:\t'%s'\n", buffer);
 
 	return 0;
 }

@@ -8,43 +8,42 @@
 
 #include <cstddef>
 #include <cstdio>
-#include <vector>
+#include <cstring>
 
 /**
- * @class	文字をカウントするクラス
- * @note	テンプレートの型 @a TYPE には符号なし整数を指定すること。
- * @note	US-ASCIIのみに対応。より広い空間を扱う場合はHashテーブルが欲しい。
+ * @class	1つの文字を複数含んでいるかチェック
+ * @note	US-ASCIIのみに対応。US-ASCII内の全ての文字を扱う。
  * @note	実質的にはUS-ASCIIの文字種数を長さに持つただの配列。
  * @note	基本的なアイディアはバケット・ソート。
  */
-template<typename TYPE>
 class LetterChecker
 {
 private:
 
-	std::vector<TYPE> buffer_;	///< 各文字のカウント
+	bool buffer_[0x100];	///< 出現文字のフラグ
 
 public:
 
 	/**
-	 * コンストラクタ
+	 * 文字列の重複文字の有無をチェック
+	 * @param[in]	string	チェック対象の文字列
+	 * @return	true: 重複文字あり, false: 重複文字なし
 	 */
-	LetterChecker()
+	bool
+	execute(const char* string)
 		{
-			buffer_.resize((size_t)0x100, (TYPE)0);
-		}
+			size_t l = std::strlen(string);
+			if (0x100 <= l) return true;
 
-	/**
-	 * 文字を追加
-	 * @param[in]	letter	文字
-	 * @return	文字 @a letter の出現回数。
-	 */
-	TYPE
-	count(char letter)
-		{
-			size_t i = 0xFF & (size_t)letter;	// 冗長?
-			buffer_[i]++;
-			return buffer_[i];
+			std::memset((void*)buffer_, 0, sizeof(buffer_));
+			int k;
+			for (size_t i(0); i < l; ++i) {
+				k = 0xFF & (int)string[i];
+				if (buffer_[k]) return true;
+				buffer_[k] = true;
+			}
+
+			return false;
 		}
 };
 
@@ -53,20 +52,18 @@ public:
  */
 int main()
 {
-	////////////////////////////////////////////////////////////
-	// US-ASCIIの場合、文字列長が256以上なら、チェック不要。
-	// US-ASCIIは '\0' を除くと文字種が255であり、
-	// 文字列長が256以上なら必ず重複があるため。
+	char sample[][1024] = {"AbCdBC.", "AbCdBc."};
 
-	char sample[] = "AbCdBC.";
+	LetterChecker* checker = new LetterChecker();
 
-	LetterChecker<unsigned char>* checker = new LetterChecker<unsigned char>();
-	size_t c;
-
-	for (size_t i(0); sample[i]; ++i) {
-		c = (size_t)checker->count(sample[i]);
-		std::printf("%c: %lu\n", sample[i], c);
-		if (c == 2) std::printf(">>>> '%c' appeared twice.\n", sample[i]);
+	for (size_t i(0); i < sizeof(sample)/sizeof(sample[0]); ++i) {
+		if (checker->execute(sample[i])) {
+			std::printf("FOUND     ");
+		}
+		else {
+			std::printf("NOT FOUND ");
+		}
+		std::printf("'%s'\n", sample[i]);
 	}
 
 	delete checker;
