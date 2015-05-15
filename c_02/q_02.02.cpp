@@ -20,8 +20,8 @@
  */
 template<typename TYPE, size_t N>
 const Node<TYPE>*
-DeleteDuplicatedKey(const Node<TYPE>* node,
-					size_t n)
+DeleteTailNode(const Node<TYPE>* node,
+			   size_t n = 0)
 {
 	const Node<TYPE>* pointers[N];
 	size_t l(0);
@@ -47,7 +47,7 @@ int main()
 {
 	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
 	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
-	const Node<int>* (*function)(const Node<int>*, size_t) =  DeleteDuplicatedKey<int, 32>;
+	const Node<int>* (*function)(const Node<int>*, size_t) =  DeleteTailNode<int, 32>;
 	const Node<int>* node;
 
 	Node<int>::Print(stdout, list);
