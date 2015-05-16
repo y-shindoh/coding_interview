@@ -65,7 +65,7 @@ public:
 			assert(i < N);
 			assert(0 < length_[i]);
 
-			const size_t j = length_[i] * N + i - 1;
+			const size_t j = (length_[i] - 1) * N + i;
 
 			return stack_[j];
 		}
@@ -150,7 +150,10 @@ int main()
 	stack->push(1, 10);
 	stack->push(1, 12);
 	stack->print(stdout);
-	std::printf(">>>> %d\n", stack->pop(0));
+	if (!stack->empty(0)) {
+		std::printf(">>>> %d\n", stack->seek(0));
+		std::printf(">>>> %d\n", stack->pop(0));
+	}
 	stack->print(stdout);
 
 	delete stack;
