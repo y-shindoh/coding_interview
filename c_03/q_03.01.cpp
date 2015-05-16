@@ -24,6 +24,10 @@ private:
 	std::vector<TYPE> stack_;	///< スタック本体
 	size_t length_[N];			///< 各スタックが保持するデータ数
 
+	////////////////////////////////////////////////////////////
+	// 本来配列で処理する箇所を手抜きして std::vector で代替。
+	// このため、不要なメモリ領域の初期化が発生することに注意。
+
 public:
 
 	/**
@@ -34,7 +38,7 @@ public:
 		{
 			assert(0 < l);
 
-			stack_.resize(l * N);
+			stack_.resize(l * N);	// 手抜き (本来なら std::malloc<f>)
 			std::memset((void*)length_, 0, sizeof(size_t) * N);
 		}
 
@@ -86,7 +90,7 @@ public:
 			size_t j = length_[i];
 
 			if (l < (j + 1) * N) {
-				stack_.resize(l * 2);
+				stack_.resize(l * 2);	// 手抜き (本来なら std::realloc<f>)
 			}
 
 			j *= N;
