@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <cassert>
 
 /**
  * @class	単方向リストのノード
@@ -118,11 +119,14 @@ public:
 	 * @param[in]	keys	リストに含める値の配列
 	 * @param[in]	length	引数 @a keys の長さ
 	 * @return	生成したリストの先頭ノード
+	 * @note	計算量はΘ(n)。ただしnは配列の長さ。
 	 */
 	static Node<TYPE>*
 	MakeList(const TYPE* keys,
 			 size_t length)
 		{
+			assert(keys);
+
 			Node<TYPE>* head(0);
 			Node<TYPE>* previous(0);
 			Node<TYPE>* current;
@@ -145,6 +149,7 @@ public:
 	/**
 	 * リストを削除
 	 * @param[in]	head	リストの先頭ノード
+	 * @note	計算量はΘ(n)。ただしnはリストの長さ。
 	 */
 	static void
 	DeleteList(Node<TYPE>* head)
@@ -157,6 +162,24 @@ public:
 				delete current;
 				current = next;
 			}
+		}
+
+	/**
+	 * リストの末尾ノードを取得
+	 * @param[in]	head	リストの先頭ノード
+	 * @return	リストの末尾ノード
+	 * @note	計算量はΘ(n)。ただしnはリストの長さ。
+	 */
+	static Node<TYPE>*
+	GetEndNode(Node<TYPE>* node)
+		{
+			assert(node);
+
+			while (node->get_next()) {
+				node = node->get_next();
+			}
+
+			return node;
 		}
 
 	/**

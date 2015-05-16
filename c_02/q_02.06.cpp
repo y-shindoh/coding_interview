@@ -1,7 +1,7 @@
 /* -*- coding: utf-8; tab-width: 4 -*- */
 /**
- * @file	q_02.05.cpp
- * @brief	「世界で闘うプログラミング力を鍛える150問」の問題2.5の回答
+ * @file	q_02.06.cpp
+ * @brief	「世界で闘うプログラミング力を鍛える150問」の問題2.6の回答
  * @author	Yasutaka SHINDOH / 新堂 安孝
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
@@ -42,17 +42,13 @@ FindLoop(const Node<TYPE>* node)
  */
 int main()
 {
-	int data[] = {1, 3, 5, 7, 9, 0, 2, 4, 6, 8};
-	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
-	Node<int>* tail(list);
+	const int data[] = {1, 3, 5, 7, 9, 0, 2, 4, 6, 8};
+	Node<int>* const list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>* const tail = Node<int>::GetEndNode(list);
 	Node<int>* node(list);
 	const Node<int>* loop;
 
 	Node<int>::Print(stdout, list);
-
-	while (tail->get_next()) {
-		tail = tail->get_next();
-	}
 
 	for (size_t i(0); i < 3; ++i) {
 		node = node->get_next();
