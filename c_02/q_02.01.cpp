@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <set>
 #include "list.hpp"
 
 /**
@@ -18,7 +19,7 @@
  */
 template<typename TYPE>
 void
-DeleteDuplicatedKey(Node<TYPE>* head)
+DeleteDuplicatedKeySlowly(Node<TYPE>* head)
 {
 	Node<TYPE>* current;
 	Node<TYPE>* previous;
@@ -46,6 +47,35 @@ DeleteDuplicatedKey(Node<TYPE>* head)
 }
 
 /**
+ * リスト中の重複するキーのノードを削除
+ * @param[in]	head	リストの先頭ノード
+ * @note	テンプレートの型 @a TYPE はリストのキーの型。
+ * @note	最悪計算量はO(n log n)となる。
+ */
+template<typename TYPE>
+void
+DeleteDuplicatedKeyFast(Node<TYPE>* node)
+{
+	Node<TYPE>* previous(0);
+	TYPE key;
+	std::set<TYPE> used_keys;
+
+	while (node) {
+		key = node->get_key();
+		if (used_keys.find(key) == used_keys.end()) {
+			used_keys.insert(key);
+			previous = node;
+			node = node->get_next();
+		}
+		else {
+			previous->set_next(node->get_next());
+			delete node;
+			node = previous->get_next();
+		}
+	}
+}
+
+/**
  * 動作確認用コマンド
  */
 int main()
@@ -53,11 +83,15 @@ int main()
 	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
 
 	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
-
 	Node<int>::Print(stdout, list);
-	DeleteDuplicatedKey<int>(list);
+	DeleteDuplicatedKeySlowly<int>(list);
 	Node<int>::Print(stdout, list);
+	Node<int>::DeleteList(list);
 
+	list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>::Print(stdout, list);
+	DeleteDuplicatedKeyFast<int>(list);
+	Node<int>::Print(stdout, list);
 	Node<int>::DeleteList(list);
 
 	return 0;
