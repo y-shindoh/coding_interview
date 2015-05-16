@@ -22,17 +22,39 @@ private:
 
 	std::vector<TYPE> data_;	///< 本来のスタック
 	std::vector<TYPE> minimum_;	///< 最小値のスタック
+	size_t length_;				///< スタックの要素数
 
 public:
 
 	/**
+	 * コンストラクタ
+	 */
+	MinimumStack()
+		: length_(0)
+		{
+			;
+		}
+
+	/**
 	 * スタックが空か確認
 	 * @return	true: 空, false: 空でない
+	 * @note	最悪計算量はO(1)。
 	 */
 	bool
 	empty() const
 		{
-			return data_.empty();
+			return length_ == 0;
+		}
+
+	/**
+	 * スタックの要素数を取得
+	 * @return	スタックの要素数
+	 * @note	最悪計算量はO(1)。
+	 */
+	size_t
+	size() const
+		{
+			return length_;
 		}
 
 	/**
@@ -42,9 +64,9 @@ public:
 	 * @note	最悪計算量はO(1)。
 	 */
 	TYPE
-	back() const
+	top() const
 		{
-			assert(0 < data_.size());
+			assert(0 < length_);
 
 			return data_.back();
 		}
@@ -58,7 +80,7 @@ public:
 	TYPE
 	minimum() const
 		{
-			assert(0 < minimum_.size());
+			assert(0 < length_);
 
 			return minimum_.back();
 		}
@@ -69,7 +91,7 @@ public:
 	 * @note	ならし解析の計算量はO(1)となる。最悪計算量はO(n)で、nはスタックの長さ。
 	 */
 	void
-	push_back(const TYPE& data)
+	push(const TYPE& data)
 		{
 			data_.push_back(data);
 			if (!minimum_.empty() && minimum_.back() < data) {
@@ -78,6 +100,7 @@ public:
 			else {
 				minimum_.push_back(data);
 			}
+			++length_;
 		}
 
 	/**
@@ -86,13 +109,13 @@ public:
 	 * @note	最悪計算量はO(1)。
 	 */
 	void
-	pop_back()
+	pop()
 		{
-			assert(0 < data_.size());
-			assert(0 < minimum_.size());
+			assert(0 < length_);
 
 			data_.pop_back();
 			minimum_.pop_back();
+			--length_;
 		}
 
 	/**
@@ -127,21 +150,21 @@ int main()
 {
 	MinimumStack<int>* stack = new MinimumStack<int>();
 
-	stack->push_back(2);
-	stack->push_back(3);
-	stack->push_back(1);
-	stack->push_back(4);
-	stack->push_back(8);
-	stack->push_back(-1);
+	stack->push(2);
+	stack->push(3);
+	stack->push(1);
+	stack->push(4);
+	stack->push(8);
+	stack->push(-1);
 
 	stack->print(stdout);
 
-	stack->pop_back();
-	stack->pop_back();
+	stack->pop();
+	stack->pop();
 
 	stack->print(stdout);
 
-	std::printf("last: %d\n", stack->back());
+	std::printf("last: %d\n", stack->top());
 	std::printf("min:  %d\n", stack->minimum());
 
 	delete stack;
