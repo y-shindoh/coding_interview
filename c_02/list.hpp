@@ -183,6 +183,24 @@ public:
 		}
 
 	/**
+	 * リストの末尾ノードを取得
+	 * @param[in]	head	リストの先頭ノード
+	 * @return	リストの末尾ノード
+	 * @note	計算量はΘ(n)。ただしnはリストの長さ。
+	 */
+	static const Node<TYPE>*
+	GetEndNode(const Node<TYPE>* node)
+		{
+			assert(node);
+
+			while (node->get_next()) {
+				node = node->get_next();
+			}
+
+			return node;
+		}
+
+	/**
 	 * リスト (ノード列) を出力
 	 * @param[out]	file	出力
 	 * @param[in]	node	リストの先頭ノード
