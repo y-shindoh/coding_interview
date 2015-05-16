@@ -14,7 +14,7 @@
 
 /**
  * @class	1つの配列で複数のスタックを実現
- * @note	テンプレートの整数 @a N はスタックの数
+ * @note	テンプレートの型 @a TYPE はスタックのキーの型。
  */
 template<typename TYPE, size_t N>
 class MultiStack
