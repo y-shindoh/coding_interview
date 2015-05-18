@@ -43,6 +43,15 @@ public:
 		}
 
 	/**
+	 * デストラクタ
+	 */
+	virtual
+	~MultiStack()
+		{
+			;
+		}
+
+	/**
 	 * 指定のスタックが空かどうか確認
 	 * @param[in]	i	スタックのインデックス
 	 * @return	true: 空, false: 空でない

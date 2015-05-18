@@ -36,6 +36,15 @@ public:
 		}
 
 	/**
+	 * デストラクタ
+	 */
+	virtual
+	~MinimumStack()
+		{
+			;
+		}
+
+	/**
 	 * スタックが空か確認
 	 * @return	true: 空, false: 空でない
 	 * @note	最悪計算量はO(1)。
