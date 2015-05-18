@@ -208,6 +208,11 @@ int main()
 		queue->enqueue(data[i] == 'c' ? 0 : 1, data[i]);
 	}
 
+	if (!queue->empty(1)) {
+		std::printf("[%lu] %c\n", queue->size(1), queue->front(1));
+		queue->dequeue(1);
+	}
+
 	while (!queue->empty(0)) {
 		std::printf("[%lu] %c\n", queue->size(0), queue->front(0));
 		queue->dequeue(0);
