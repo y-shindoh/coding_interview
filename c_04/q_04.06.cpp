@@ -11,30 +11,12 @@
 #include "binary_search_tree.hpp"
 
 /**
- * 比較関数
- */
-int
-compare(const int& left,
-		const int& right)
-{
-	if (left < right) {
-		return -1;
-	}
-	else if (left > right) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
-}
-
-/**
  * 動作確認用コマンド
  */
 int main()
 {
 	const int data[] = {0, 1, 2, 3, 4, 5, 6};
-	BinarySearchTree<int>* tree = new BinarySearchTree<int>(compare);
+	BinarySearchTree<int>* tree = new BinarySearchTree<int>();
 
 	// 下記 BinarySearchTree::print<f> が回答
 
