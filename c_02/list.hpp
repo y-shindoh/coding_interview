@@ -6,6 +6,9 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+#ifndef	__LIST_HPP__
+#define	__LIST_HPP__ "list.hpp"
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
@@ -223,3 +226,5 @@ public:
 			std::fprintf(file, "]\n");
 		}
 };
+
+#endif	// __LIST_HPP__
