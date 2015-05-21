@@ -19,10 +19,11 @@
  * @note	テンプレートの型 @a TYPE はリストのキーの型。
  * @note	ループが見つからない場合は @a 0 が返却される。
  * @note	計算量はO(n)となる。
+ * @note	確実に正解を出す回答。本来の回答とは違う。
  */
 template<typename TYPE>
 const Node<TYPE>*
-FindLoop(const Node<TYPE>* node)
+FindLoop1(const Node<TYPE>* node)
 {
 	assert(node);
 
@@ -38,6 +39,42 @@ FindLoop(const Node<TYPE>* node)
 }
 
 /**
+ * リストからループの最初のノードを抽出
+ * @param[in]	node	処理対象のリスト
+ * @return	ループの最初のノード
+ * @note	テンプレートの型 @a TYPE はリストのキーの型。
+ * @note	ループが見つからない場合は @a 0 が返却される。
+ * @note	計算量はO(n)となる。
+ * @note	本来の回答はこちら。
+ */
+template<typename TYPE>
+const Node<TYPE>*
+FindLoop2(const Node<TYPE>* node)
+{
+	assert(node);
+
+	const Node<TYPE>* fast(node);
+	const Node<TYPE>* slow(node);
+
+	while ('-') {
+		fast = fast->get_next();
+		if (!fast) return 0;
+		fast = fast->get_next();
+		if (!fast) return 0;
+		slow = slow->get_next();
+		if (fast == slow) break;
+	}
+
+	slow = node;
+
+	while ('-') {
+		if (fast == slow) return fast;
+		fast = fast->get_next();
+		slow = slow->get_next();
+	}
+}
+
+/**
  * 動作確認用コマンド
  */
 int main()
@@ -50,7 +87,7 @@ int main()
 
 	Node<int>::Print(stdout, list);
 
-	for (size_t i(0); i < 3; ++i) {
+	for (size_t i(0); i < 4; ++i) {
 		node = node->get_next();
 	}
 	std::printf("CONNECT: %d\n", node->get_key());
@@ -58,7 +95,12 @@ int main()
 	// ループを作る
 	tail->set_next(node);
 
-	loop = FindLoop<int>(list);
+	loop = FindLoop1<int>(list);
+	if (loop) {
+		std::printf("FOUND: %d\n", loop->get_key());
+	}
+
+	loop = FindLoop2<int>(list);
 	if (loop) {
 		std::printf("FOUND: %d\n", loop->get_key());
 	}
