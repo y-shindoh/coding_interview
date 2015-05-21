@@ -9,12 +9,14 @@
 #ifndef	__LIST_HPP__
 #define	__LIST_HPP__ "list.hpp"
 
+//#define	USE_DOUBLY_LINKED_LIST	"use doubly linked list."
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
 
 /**
- * @class	単方向リストのノード
+ * @class	リストのノード
  * @note	テンプレートの型 @a TYPE はリストのキーの型。
  */
 template<typename TYPE>
