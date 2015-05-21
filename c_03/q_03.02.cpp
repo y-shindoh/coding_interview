@@ -101,10 +101,7 @@ public:
 	push(const TYPE& data)
 		{
 			data_.push_back(data);
-			if (!minimum_.empty() && minimum_.back() < data) {
-				minimum_.push_back(minimum_.back());
-			}
-			else {
+			if (minimum_.empty() || data <= minimum_.back()) {
 				minimum_.push_back(data);
 			}
 		}
@@ -120,8 +117,10 @@ public:
 			assert(!data_.empty());
 			assert(!minimum_.empty());
 
+			if (data_.back() <= minimum_.back()) {
+				minimum_.pop_back();
+			}
 			data_.pop_back();
-			minimum_.pop_back();
 		}
 
 	/**
@@ -131,8 +130,7 @@ public:
 	void
 	print(FILE* file) const
 		{
-			const size_t l = data_.size();
-
+			size_t l = data_.size();
 			std::fprintf(file, "[D] ");
 			for (size_t i(0); i < l; ++i) {
 				if (0 < i) std::fprintf(file, ", ");
@@ -140,6 +138,7 @@ public:
 			}
 			std::fprintf(file, "\n");
 
+			l = minimum_.size();
 			std::fprintf(file, "[M] ");
 			for (size_t i(0); i < l; ++i) {
 				if (0 < i) std::fprintf(file, ", ");
