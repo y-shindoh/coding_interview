@@ -22,7 +22,6 @@ private:
 
 	std::vector<TYPE> data_;	///< 本来のスタック
 	std::vector<TYPE> minimum_;	///< 最小値のスタック
-	size_t length_;				///< スタックの要素数
 
 public:
 
@@ -30,7 +29,6 @@ public:
 	 * コンストラクタ
 	 */
 	MinimumStack()
-		: length_(0)
 		{
 			;
 		}
@@ -52,7 +50,7 @@ public:
 	bool
 	empty() const
 		{
-			return length_ == 0;
+			return data_.empty();
 		}
 
 	/**
@@ -63,7 +61,7 @@ public:
 	size_t
 	size() const
 		{
-			return length_;
+			return data_.size();
 		}
 
 	/**
@@ -75,7 +73,7 @@ public:
 	TYPE
 	top() const
 		{
-			assert(0 < length_);
+			assert(!data_.empty());
 
 			return data_.back();
 		}
@@ -89,7 +87,7 @@ public:
 	TYPE
 	minimum() const
 		{
-			assert(0 < length_);
+			assert(!minimum_.empty());
 
 			return minimum_.back();
 		}
@@ -109,7 +107,6 @@ public:
 			else {
 				minimum_.push_back(data);
 			}
-			++length_;
 		}
 
 	/**
@@ -120,11 +117,11 @@ public:
 	void
 	pop()
 		{
-			assert(0 < length_);
+			assert(!data_.empty());
+			assert(!minimum_.empty());
 
 			data_.pop_back();
 			minimum_.pop_back();
-			--length_;
 		}
 
 	/**
