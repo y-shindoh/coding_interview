@@ -15,6 +15,7 @@
 /**
  * @class	1つの配列で複数のスタックを実現
  * @note	テンプレートの型 @a TYPE はスタックのキーの型。
+ * @note	メモリ空間の利用効率は悪いが、可変長であっても実装が簡単。
  */
 template<typename TYPE, size_t N>
 class MultiStack
