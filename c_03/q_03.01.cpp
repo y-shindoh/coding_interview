@@ -39,7 +39,7 @@ public:
 			assert(0 < l);
 
 			stack_.resize(l * N);	// 手抜き (本来なら std::malloc<f>)
-			std::memset((void*)length_, 0, sizeof(size_t) * N);
+			std::memset((void*)length_, 0, sizeof(length_));
 		}
 
 	/**
@@ -73,7 +73,7 @@ public:
 	 * @note	最悪計算量はO(1)。
 	 */
 	TYPE
-	seek(size_t i) const
+	top(size_t i) const
 		{
 			assert(i < N);
 			assert(0 < length_[i]);
@@ -164,7 +164,7 @@ int main()
 	stack->push(1, 12);
 	stack->print(stdout);
 	if (!stack->empty(0)) {
-		std::printf(">>>> %d\n", stack->seek(0));
+		std::printf(">>>> %d\n", stack->top(0));
 		std::printf(">>>> %d\n", stack->pop(0));
 	}
 	stack->print(stdout);
