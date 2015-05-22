@@ -43,8 +43,8 @@ int main()
 	tree->print(stdout);
 	std::printf("=> %s\n", tree->is_correct() ? "OK" : "NG");
 
-	BinarySearchNode<int>* node = tree->search(0);
-	node->set_key(2);
+	BinarySearchNode<int>* node = tree->search(2);
+	node->set_key(7);
 	tree->print(stdout);
 	std::printf("=> %s\n", tree->is_correct() ? "OK" : "NG");
 
