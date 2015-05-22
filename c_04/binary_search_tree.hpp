@@ -83,13 +83,11 @@ public:
 	/**
 	 * メソッド @a BinarySearchTree::prepare の本体
 	 * @param[in]	input	処理対象の降順ソート済み配列
-	 * @param[in]	index	ポインタを格納する二分探索木のインデックス
 	 * @param[in]	start	引数 @a input の処理対象の始点
 	 * @param[in]	end	引数 @a input の処理対象の終点
 	 */
 	static BinarySearchNode<TYPE>*
 	PrepareTree(const TYPE* input,
-				size_t index,
 				size_t start,
 				size_t end)
 		{
@@ -97,13 +95,13 @@ public:
 			BinarySearchNode<TYPE>* node = new BinarySearchNode<TYPE>(input[center]);
 
 			if (start < center) {
-				node->children_[0] = PrepareTree(input, index * 2, start, center - 1);
+				node->children_[0] = PrepareTree(input, start, center - 1);
 #ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
 				if (node->children_[0]) node->children_[0]->parent_ = node;
 #endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
 			}
 			if (center < end) {
-				node->children_[1] = PrepareTree(input, index * 2 + 1, center + 1, end);
+				node->children_[1] = PrepareTree(input, center + 1, end);
 #ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
 				if (node->children_[1]) node->children_[1]->parent_ = node;
 #endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
@@ -191,6 +189,8 @@ public:
 	 * @param[out]	min	最短距離 (呼び出し時に @a ~0 を含む変数を指定)
 	 * @param[out]	max	最長距離 (呼び出し時に @a 0 を含む変数を指定)
 	 * @param[in]	現時点での呼び出し元からの距離
+	 * @note	タスクによっては、
+				maxとminの差が一定以上大きくなった時点で終了させることも考える。
 	 */
 	static void
 	GetDepth(const BinarySearchNode<TYPE>* node,
@@ -210,19 +210,30 @@ public:
 
 	/**
 	 * メソッド @a BinarySearchTree::is_correct の本体
+	 * @param[in]	node	処理対象のノード
+	 * @param[in]	compare	キー比較の関数
+	 * @param[in]	min	部分木の最小値
+	 * @param[in]	max	部分木の最大値
 	 * @return	true: 親子関係を守っている, false: 親子関係を守ってない
 	 */
 	static bool
-	CheckRule(const BinarySearchNode<TYPE>* node)
+	CheckRule(const BinarySearchNode<TYPE>* node,
+			  int (* compare)(const TYPE&, const TYPE&),
+			  const TYPE& min,
+			  const TYPE& max)
 		{
+			assert(compare);
+
 			if (node) {
+				if (0 > compare(node->key_, min)) return false;
+				if (0 < compare(node->key_, max)) return false;
 				if (node->children_[0]) {
-					if (node->key_ <= node->children_[0]->key_) return false;
-					if (!CheckRule(node->children_[0])) return false;
+					if (0 > compare(node->key_, node->children_[0]->key_)) return false;
+					if (!CheckRule(node->children_[0], compare, min, node->key_)) return false;
 				}
 				if (node->children_[1]) {
-					if (node->key_ >= node->children_[1]->key_) return false;
-					if (!CheckRule(node->children_[1])) return false;
+					if (0 < compare(node->key_, node->children_[1]->key_)) return false;
+					if (!CheckRule(node->children_[1], compare, node->key_, max)) return false;
 				}
 			}
 
@@ -280,6 +291,8 @@ class BinarySearchTree
 private:
 
 	BinarySearchNode<TYPE>* root_;	///< 二分探索木の根
+	TYPE max_;						///< 最大値
+	TYPE min_;						///< 最小値
 
 	/**
 	 * 探索に用いる比較関数
@@ -309,8 +322,8 @@ public:
 		}
 
 	/**
-	 * 降順ソート済み配列から平衡二分探索木を構築
-	 * @param[in]	input	処理対象の降順ソート済み配列
+	 * 昇順ソート済み配列から平衡二分探索木を構築
+	 * @param[in]	input	処理対象の昇順ソート済み配列
 	 * @param[in]	length	引数 @a input の長さ
 	 */
 	void
@@ -322,16 +335,21 @@ public:
 
 			if (root_) delete root_;
 
-			root_ = BinarySearchNode<TYPE>::PrepareTree(input, 1, 0, length - 1);
+			min_ = input[0];
+			max_ = input[length-1];
+			root_ = BinarySearchNode<TYPE>::PrepareTree(input, 0, length - 1);
 		}
 
 	/**
 	 * データ追加
-	 * @param[in]	data	追加対象のデータ
+	 * @param[in]	key	追加対象のキー
+	 * @note	本実装ではキーの重複はないものと仮定する。
 	 */
 	void
 	add(const TYPE& key)
 		{
+			if (0 < compare_(key, min_)) min_ = key;
+			if (0 > compare_(key, max_)) max_ = key;
 			root_ = BinarySearchNode<TYPE>::AddNode(root_, compare_, key);
 		}
 
@@ -384,7 +402,7 @@ public:
 	bool
 	is_correct() const
 		{
-			return BinarySearchNode<TYPE>::CheckRule(root_);
+			return BinarySearchNode<TYPE>::CheckRule(root_, compare_, min_, max_);
 		}
 
 	/**
