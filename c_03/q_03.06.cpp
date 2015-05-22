@@ -16,6 +16,7 @@
  * スタックをソーティング
  * @param[in,out]	stack	ソーティング対象のスタック
  * @param	buffer	作業領域
+ * @note	計算量はΘ(n^2)。
  */
 template<typename TYPE>
 void
