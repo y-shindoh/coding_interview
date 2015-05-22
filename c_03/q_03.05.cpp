@@ -20,8 +20,25 @@ class MyDueue
 {
 private:
 
-	std::vector<TYPE> stack_;	///< スタック本体
-	std::vector<TYPE> buffer_;	///< バッファ
+	std::vector<TYPE> input_;	///< 入力用スタック
+	std::vector<TYPE> output_;	///< 出力用スタック (LIFOを実現)
+
+	/**
+	 * スタック間で要素移動
+	 * @note	計算量をおさえるため、出力用スタックが空の時にのみ動作。
+	 */
+	void
+	adjust_stacks()
+		{
+			if (output_.empty()) {
+				TYPE data;
+				while (!input_.empty()) {
+					data = input_.back();
+					input_.pop_back();
+					output_.push_back(data);
+				}
+			}
+		}
 
 public:
 
@@ -42,7 +59,7 @@ public:
 	bool
 	empty() const
 		{
-			return stack_.empty();
+			return input_.empty() && output_.empty();
 		}
 
 	/**
@@ -54,28 +71,13 @@ public:
 	TYPE
 	front()
 		{
-			assert(!stack_.empty());
+			assert(!input_.empty() || !output_.empty());
 
-			TYPE tmp;
+			adjust_stacks();
 
-			if (0 < stack_.size())
-				std::printf("**%d**\n", stack_.back());
+			assert(!output_.empty());
 
-			while (!stack_.empty()) {
-				tmp = stack_.back();
-				stack_.pop_back();
-				buffer_.push_back(tmp);
-			}
-
-			TYPE data = buffer_.back();
-
-			while (!buffer_.empty()) {
-				tmp = buffer_.back();
-				buffer_.pop_back();
-				stack_.push_back(tmp);
-			}
-
-			return data;
+			return output_.back();
 		}
 
 	/**
@@ -86,7 +88,7 @@ public:
 	void
 	enqueue(const TYPE& data)
 		{
-			stack_.push_back(data);
+			input_.push_back(data);
 		}
 
 	/**
@@ -98,24 +100,14 @@ public:
 	void
 	dequeue(TYPE* data = 0)
 		{
-			assert(!stack_.empty());
+			assert(!input_.empty() || !output_.empty());
 
-			TYPE tmp;
+			adjust_stacks();
 
-			while (!stack_.empty()) {
-				tmp = stack_.back();
-				stack_.pop_back();
-				buffer_.push_back(tmp);
-			}
+			assert(!output_.empty());
 
-			if (data) *data = buffer_.back();
-			buffer_.pop_back();
-
-			while (!buffer_.empty()) {
-				tmp = buffer_.back();
-				buffer_.pop_back();
-				stack_.push_back(tmp);
-			}
+			if (data) *data = output_.back();
+			output_.pop_back();
 		}
 };
 
@@ -128,7 +120,7 @@ int main()
 	MyDueue<int>* queue = new MyDueue<int>();
 
 	for (size_t i(0); i < sizeof(data)/sizeof(data[0]); ++i) {
-		queue->enqueue(i);
+		queue->enqueue(data[i]);
 	}
 
 	std::printf("***FRONT***\n");
