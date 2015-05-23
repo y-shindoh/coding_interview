@@ -253,7 +253,7 @@ public:
 		{
 			assert(node);
 
-			while (array.size() <= depth) array.resize(depth + 1);
+			if (array.size() <= depth) array.resize(depth + 1);
 			array[depth].push_back(node);
 
 			if (node->children_[0]) GetNodesWithSameDepth(node->children_[0], depth + 1, array);
