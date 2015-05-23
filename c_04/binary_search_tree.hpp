@@ -74,7 +74,7 @@ public:
 	 * @return	ノードのキー
 	 */
 	TYPE
-	get_key()
+	get_key() const
 		{
 			return key_;
 		}
@@ -241,6 +241,26 @@ public:
 		}
 
 	/**
+	 * メソッド @a BinarySearchTree::get_nodes_with_same_depth の本体
+	 * @param[in]	node	処理対象のノード
+	 * @param[in]	depth	深さ
+	 * @param[out]	array	深さ毎のノード
+	 */
+	static void
+	GetNodesWithSameDepth(const BinarySearchNode<TYPE>* node,
+						  size_t depth,
+						  std::vector<std::vector<const BinarySearchNode<TYPE>*> >& array)
+		{
+			assert(node);
+
+			while (array.size() <= depth) array.resize(depth + 1);
+			array[depth].push_back(node);
+
+			if (node->children_[0]) GetNodesWithSameDepth(node->children_[0], depth + 1, array);
+			if (node->children_[1]) GetNodesWithSameDepth(node->children_[1], depth + 1, array);
+		}
+
+	/**
 	 * メソッド @a PrintTree の補助関数
 	 * @param[out]	file	出力先ファイル
 	 * @param[in]	node	出力対象のノード
@@ -403,6 +423,16 @@ public:
 	is_correct() const
 		{
 			return BinarySearchNode<TYPE>::CheckRule(root_, compare_, min_, max_);
+		}
+
+	/**
+	 * 深さ毎のノードを取得
+	 * @param[out]	array	深さ毎のノード
+	 */
+	void
+	get_nodes_with_same_depth(std::vector<std::vector<const BinarySearchNode<TYPE>*> >& array)
+		{
+			BinarySearchNode<TYPE>::GetNodesWithSameDepth(root_, 0, array);
 		}
 
 	/**
