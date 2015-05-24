@@ -123,8 +123,67 @@ clear_low_bits(TYPE bits,
 {
 	assert(i < sizeof(TYPE) * 8);
 
-	if (i + 1 == sizeof(TYPE) * 8) return 0;
-	return bits & ~(((TYPE)1 << (i+1)) - 1);
+	if (i == sizeof(TYPE) * 8 - 1) return 0;
+	return bits & ~(((TYPE)1 << (i + 1)) - 1);
+}
+
+/**
+ * 最も低い桁の @a 1 のビットを取得
+ * @param[in]	bits	処理対象の整数
+ * @return	処理後の整数
+ * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
+ */
+template<typename TYPE>
+TYPE
+get_lowest_bit(TYPE bits)
+{
+	size_t v = (size_t)bits;
+
+	return (TYPE)v & (~(TYPE)v + 1);
+}
+
+/**
+ * 最も高い桁の @a 1 のビットを取得
+ * @param[in]	bits	処理対象の整数
+ * @return	処理後の整数
+ * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
+ */
+template<typename TYPE>
+TYPE
+get_highest_bit(TYPE bits)
+{
+	size_t v = (size_t)bits;
+
+	v = ((size_t)0xFFFFFFFF00000000 & v) ? ((size_t)0xFFFFFFFF00000000 & v) : v;
+	v = ((size_t)0xFFFF0000FFFF0000 & v) ? ((size_t)0xFFFF0000FFFF0000 & v) : v;
+	v = ((size_t)0xFF00FF00FF00FF00 & v) ? ((size_t)0xFF00FF00FF00FF00 & v) : v;
+	v = ((size_t)0xF0F0F0F0F0F0F0F0 & v) ? ((size_t)0xF0F0F0F0F0F0F0F0 & v) : v;
+	v = ((size_t)0xCCCCCCCCCCCCCCCC & v) ? ((size_t)0xCCCCCCCCCCCCCCCC & v) : v;
+	v = ((size_t)0xAAAAAAAAAAAAAAAA & v) ? ((size_t)0xAAAAAAAAAAAAAAAA & v) : v;
+
+	return (TYPE)v;
+}
+
+/**
+ * ビットのうち @a 1 になっているものの総数を算出
+ * @param[in]	bits	処理対象の整数
+ * @return	処理後の整数
+ * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
+ */
+template<typename TYPE>
+size_t
+counts_bits(TYPE bits)
+{
+	size_t v = (size_t)bits;
+
+	v = (((size_t)0xAAAAAAAAAAAAAAAA & v) >> 1) + ((size_t)0x5555555555555555 & v);
+	v = (((size_t)0xCCCCCCCCCCCCCCCC & v) >> 2) + ((size_t)0x3333333333333333 & v);
+	v = (((size_t)0xF0F0F0F0F0F0F0F0 & v) >> 4) + ((size_t)0x0F0F0F0F0F0F0F0F & v);
+	v = (((size_t)0xFF00FF00FF00FF00 & v) >> 8) + ((size_t)0x00FF00FF00FF00FF & v);
+	v = (((size_t)0xFFFF0000FFFF0000 & v) >> 16) + ((size_t)0x0000FFFF0000FFFF & v);
+	v = (((size_t)0xFFFFFFFF00000000 & v) >> 32) + ((size_t)0x00000000FFFFFFFF & v);
+
+	return (TYPE)v;
 }
 
 #endif	// __BITS_OPERATION_HPP__
