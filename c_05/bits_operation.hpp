@@ -172,7 +172,7 @@ get_highest_bit(TYPE bits)
  */
 template<typename TYPE>
 size_t
-counts_bits(TYPE bits)
+count_bits(TYPE bits)
 {
 	size_t v = (size_t)bits;
 
@@ -183,7 +183,7 @@ counts_bits(TYPE bits)
 	v = (((size_t)0xFFFF0000FFFF0000 & v) >> 16) + ((size_t)0x0000FFFF0000FFFF & v);
 	v = (((size_t)0xFFFFFFFF00000000 & v) >> 32) + ((size_t)0x00000000FFFFFFFF & v);
 
-	return (TYPE)v;
+	return v;
 }
 
 #endif	// __BITS_OPERATION_HPP__
