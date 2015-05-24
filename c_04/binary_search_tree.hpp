@@ -68,6 +68,7 @@ public:
 		{
 			key_ = key;
 		}
+#endif	// __BINARY_SEARCH_TREE_GET_RAW_DATA__
 
 	/**
 	 * ノードのキーを直接取得
@@ -78,7 +79,6 @@ public:
 		{
 			return key_;
 		}
-#endif	// __BINARY_SEARCH_TREE_GET_RAW_DATA__
 
 	/**
 	 * メソッド @a BinarySearchTree::prepare の本体
@@ -261,6 +261,38 @@ public:
 		}
 
 	/**
+	 * 2つの木が等しいか否かを確認 (メソッド @a BinarySearchTree::has_subtree の本体)
+	 * @param[in]	first	木 (その1)
+	 * @param[in]	second	木 (その2)
+	 * @return	true: 等しい, false: 等しくない
+	 */
+	static bool
+	CheckSame(const BinarySearchNode<TYPE>* first,
+			  const BinarySearchNode<TYPE>* second)
+		{
+			assert(first);
+			assert(second);
+
+			if (first->key_ != second->key_) return false;
+			if (first->children_[0]) {
+				if (!second->children_[0]) return false;
+				if (!CheckSame(first->children_[0], second->children_[0])) return false;
+			}
+			else {
+				if (second->children_[0]) return false;
+			}
+			if (first->children_[1]) {
+				if (!second->children_[1]) return false;
+				if (!CheckSame(first->children_[1], second->children_[1])) return false;
+			}
+			else {
+				if (second->children_[1]) return false;
+			}
+
+			return true;
+		}
+
+	/**
 	 * メソッド @a PrintTree の補助関数
 	 * @param[out]	file	出力先ファイル
 	 * @param[in]	node	出力対象のノード
@@ -432,12 +464,33 @@ public:
 	void
 	get_nodes_with_same_depth(std::vector<std::vector<const BinarySearchNode<TYPE>*> >& array)
 		{
+			assert(root_);
+
 			BinarySearchNode<TYPE>::GetNodesWithSameDepth(root_, 0, array);
+		}
+
+	/**
+	 * 部分木を持つか否かを確認
+	 * @param[in]	tree	部分木の候補
+	 * @return	true: 引数 @a tree は部分木, false: 引数 @a tree は部分木でない
+	 */
+	bool
+	has_subtree(const BinarySearchTree<TYPE>& tree) const
+		{
+			assert(root_);
+			assert(compare_);
+
+			const BinarySearchNode<TYPE>* node = BinarySearchNode<TYPE>::SearchKey(root_, compare_, tree.root_->get_key());
+
+			if (!node) return false;
+
+			return BinarySearchNode<TYPE>::CheckSame(node, tree.root_);
 		}
 
 	/**
 	 * 二分探索木をファイルに出力
 	 * @param[out]	file	出力先ファイル
+	 * @param[in]	position	処理手順 (負: pre-order, 0: in-order, 正: post-order)
 	 */
 	void
 	print(FILE* file,
