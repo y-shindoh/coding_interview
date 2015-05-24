@@ -127,4 +127,4 @@ clear_low_bits(TYPE bits,
 	return bits & ~(((TYPE)1 << (i+1)) - 1);
 }
 
-#endif	__BITS_OPERATION_HPP__
+#endif	// __BITS_OPERATION_HPP__
