@@ -8,7 +8,6 @@
 
 #include <cstddef>
 #include <cstdio>
-#define	__BINARY_SEARCH_TREE_GET_RAW_DATA__	1
 #include "binary_search_tree.hpp"
 
 /**
