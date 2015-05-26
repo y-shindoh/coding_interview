@@ -73,7 +73,7 @@ public:
 			print();
 			++count_;
 
-			int v = towers_[f].back();
+			unsigned int v = towers_[f].back();
 			towers_[f].pop_back();
 			towers_[d].push_back(v);
 
