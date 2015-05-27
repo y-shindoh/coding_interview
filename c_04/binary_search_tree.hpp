@@ -292,6 +292,95 @@ public:
 			return true;
 		}
 
+#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
+	/**
+	 * 次のノードを取得
+	 * @param[in]	node	処理対象のノード
+	 * @param[in]	direction	0: 順方向, 1: 逆方向 (in-orderの順で)
+	 * @return	引数 @a node の次のノード
+	 */
+	static const BinarySearchNode<TYPE>*
+	GetNextNode(const BinarySearchNode<TYPE>* node,
+				size_t direction = 0)
+		{
+			assert(node);
+			assert(direction < 2);
+
+			size_t i = 1 - direction;
+			size_t j = direction;
+
+			// direction = 0: 自分より大きい子孫の最小ノード
+			// direction = 1: 自分より小さい子孫の最大ノード
+			if (node->children_[i]) {
+				node = node->children_[i];
+				while (node->children_[j]) {
+					node = node->children_[j];
+				}
+				return node;
+			}
+
+			// direction = 0: 自分より大きい祖先の最小ノード
+			// direction = 1: 自分より小さい祖先の最大ノード
+			const BinarySearchNode<TYPE>* parent = node->parent_;
+			while (parent && parent->children_[i] == node) {
+				node = parent;
+				parent = node->parent_;
+			}
+			return parent;
+		}
+
+	/**
+	 * メソッド @a FindSameParent の補助関数
+	 * @param[in]	first	ノード1
+	 * @param[in]	second	ノード2
+	 * @param[in]	ignore	処理対象外のノード (呼び出し直後のみ有効)
+	 * @retval	true: ノード @a second はノード @a first かその子孫
+	 * @retval	false: ノード @a second はノード @a first やその子孫でない
+	 */
+	static bool
+	FindSameParentRoutine(const BinarySearchNode<TYPE>* first,
+						  const BinarySearchNode<TYPE>* second,
+						  const BinarySearchNode<TYPE>* ignore = 0)
+		{
+			if (first == second) return true;
+
+			// 子方向に下りながら探索
+			for (size_t i(0); i < 2; ++i) {
+				if (!first->children_[i]) continue;
+				if (first->children_[i] == ignore) continue;
+				if (FindSameParentRoutine(first->children_[i], second)) return true;
+			}
+
+			return false;
+		}
+
+	/**
+	 * 2つのノードに共通するもっとも深い位置の親ノードを取得
+	 * @param[in]	first	ノード1
+	 * @param[in]	second	ノード2
+	 * @return	2つのノードに共通するもっとも深い位置の親ノード
+	 */
+	static const BinarySearchNode<TYPE>*
+	FindSameParent(const BinarySearchNode<TYPE>* first,
+				   const BinarySearchNode<TYPE>* second)
+		{
+			assert(first);
+			assert(second);
+
+			const BinarySearchNode<TYPE>* ignore(0);
+
+			// 親方向にさかのぼりながら子を探索
+			while (first) {
+				if (FindSameParentRoutine(first, second, ignore)) return first;
+				if (!first->parent_) break;
+				ignore = first;
+				first = first->parent_;
+			}
+
+			return 0;
+		}
+#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
+
 	/**
 	 * メソッド @a PrintTree の補助関数
 	 * @param[out]	file	出力先ファイル
@@ -496,6 +585,7 @@ public:
 	print(FILE* file,
 		  int position = -1) const
 		{
+			assert(file);
 			assert(root_);
 
 			BinarySearchNode<TYPE>::PrintTree(file, root_, position);
