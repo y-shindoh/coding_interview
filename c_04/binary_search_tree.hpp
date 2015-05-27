@@ -32,6 +32,50 @@ private:
 	BinarySearchNode<TYPE>* children_[2];	///< 子ノード (葉ノードは @a 0 )
 	TYPE key_;								///< キー
 
+#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
+	/**
+	 * メソッド @a FindSameParent の補助関数
+	 * @param[in]	first	ノード1
+	 * @param[in]	second	ノード2
+	 * @param[in]	ignore	処理対象外のノード (呼び出し直後のみ有効)
+	 * @retval	true: ノード @a second はノード @a first かその子孫
+	 * @retval	false: ノード @a second はノード @a first やその子孫でない
+	 */
+	static bool
+	FindSameParentRoutine(const BinarySearchNode<TYPE>* first,
+						  const BinarySearchNode<TYPE>* second,
+						  const BinarySearchNode<TYPE>* ignore = 0)
+		{
+			if (first == second) return true;
+
+			// 子方向に下りながら探索
+			for (size_t i(0); i < 2; ++i) {
+				if (!first->children_[i]) continue;
+				if (first->children_[i] == ignore) continue;
+				if (FindSameParentRoutine(first->children_[i], second)) return true;
+			}
+
+			return false;
+		}
+#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
+
+	/**
+	 * メソッド @a PrintTree の補助関数
+	 * @param[out]	file	出力先ファイル
+	 * @param[in]	node	出力対象のノード
+	 * @param[in]	prefix	ノード前に記述する文字
+	 * @param[in]	depth	深さ
+	 */
+	static void
+	PrintTreeRoutine(FILE* file,
+					 const BinarySearchNode<TYPE>* node,
+					 const char prefix,
+					 size_t depth)
+		{
+			for (size_t i(0); i < depth; ++i) std::printf("  ");
+			std::printf("%c:%G\n", prefix, (double)node->key_);
+		}
+
 public:
 
 	/**
@@ -58,7 +102,6 @@ public:
 			if (children_[1]) delete children_[1];
 		}
 
-#ifdef	__BINARY_SEARCH_TREE_GET_RAW_DATA__
 	/**
 	 * ノードにキーを直接設定
 	 * @param[in]	key	設定するキー
@@ -68,7 +111,6 @@ public:
 		{
 			key_ = key;
 		}
-#endif	// __BINARY_SEARCH_TREE_GET_RAW_DATA__
 
 	/**
 	 * ノードのキーを直接取得
@@ -330,31 +372,6 @@ public:
 		}
 
 	/**
-	 * メソッド @a FindSameParent の補助関数
-	 * @param[in]	first	ノード1
-	 * @param[in]	second	ノード2
-	 * @param[in]	ignore	処理対象外のノード (呼び出し直後のみ有効)
-	 * @retval	true: ノード @a second はノード @a first かその子孫
-	 * @retval	false: ノード @a second はノード @a first やその子孫でない
-	 */
-	static bool
-	FindSameParentRoutine(const BinarySearchNode<TYPE>* first,
-						  const BinarySearchNode<TYPE>* second,
-						  const BinarySearchNode<TYPE>* ignore = 0)
-		{
-			if (first == second) return true;
-
-			// 子方向に下りながら探索
-			for (size_t i(0); i < 2; ++i) {
-				if (!first->children_[i]) continue;
-				if (first->children_[i] == ignore) continue;
-				if (FindSameParentRoutine(first->children_[i], second)) return true;
-			}
-
-			return false;
-		}
-
-	/**
 	 * 2つのノードに共通するもっとも深い位置の親ノードを取得
 	 * @param[in]	first	ノード1
 	 * @param[in]	second	ノード2
@@ -380,23 +397,6 @@ public:
 			return 0;
 		}
 #endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
-
-	/**
-	 * メソッド @a PrintTree の補助関数
-	 * @param[out]	file	出力先ファイル
-	 * @param[in]	node	出力対象のノード
-	 * @param[in]	prefix	ノード前に記述する文字
-	 * @param[in]	depth	深さ
-	 */
-	static void
-	PrintTreeRoutine(FILE* file,
-					 const BinarySearchNode<TYPE>* node,
-					 const char prefix,
-					 size_t depth)
-		{
-			for (size_t i(0); i < depth; ++i) std::printf("  ");
-			std::printf("%c:%G\n", prefix, (double)node->key_);
-		}
 
 	/**
 	 * メソッド @a BinarySearchTree::print の本体
