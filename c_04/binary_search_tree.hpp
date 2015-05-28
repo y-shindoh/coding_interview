@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cassert>
 #include <vector>
+#include <deque>
 
 /**
  * 二分探索木のノード
@@ -184,7 +185,7 @@ public:
 #endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
 				}
 				else {
-					assert(!"Found a duplicated key!");
+					assert(!"Found a duplicated key!");	// 重複キーを認めない
 				}
 				return node;
 			}
@@ -420,6 +421,10 @@ public:
 			if (0 < position) PrintTreeRoutine(file, node, prefix, depth);	// post-order処理
 		}
 
+	/**
+	 * ノードをフィールドに持つ木はフレンド・クラス
+	 */
+	template<typename TYPE_1> friend class BinarySearchTree;
 };
 
 /**
@@ -464,7 +469,7 @@ public:
 
 	/**
 	 * 昇順ソート済み配列から平衡二分探索木を構築
-	 * @param[in]	input	処理対象の昇順ソート済み配列
+	 * @param[in]	input	処理対象の昇順ソート済みキー配列
 	 * @param[in]	length	引数 @a input の長さ
 	 */
 	void
@@ -562,6 +567,10 @@ public:
 	 * 部分木を持つか否かを確認
 	 * @param[in]	tree	部分木の候補
 	 * @return	true: 引数 @a tree は部分木, false: 引数 @a tree は部分木でない
+	 * @note	メモリ占有量はO(log m + log n)、計算量はO(k * n)となる。
+				ここで、mは呼び出し元オブジェクトのノード数、
+				nは引数 @a tree のノード数、
+				kは引数 @a tree の根のキーを持つ呼び出し元オブジェクトのノード数。
 	 */
 	bool
 	has_subtree(const BinarySearchTree<TYPE>& tree) const
@@ -573,7 +582,20 @@ public:
 
 			if (!node) return false;
 
-			return BinarySearchNode<TYPE>::CheckSame(node, tree.root_);
+			std::deque<const BinarySearchNode<TYPE>*> queue;
+			queue.push_back(node);
+
+			while (!queue.empty()) {
+				node = queue.front();
+				if (BinarySearchNode<TYPE>::CheckSame(node, tree.root_)) return true;
+				for (size_t i(0); i < 2; ++i) {
+					if (!node->children_[i]) continue;
+					queue.push_back(node->children_[i]);	// 重複キー対策
+				}
+				queue.pop_front();
+			}
+
+			return false;
 		}
 
 	/**
