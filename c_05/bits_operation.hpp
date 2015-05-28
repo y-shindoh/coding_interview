@@ -129,8 +129,7 @@ clear_low_bits(TYPE bits,
 {
 	assert(i < sizeof(TYPE) * 8);
 
-	if (i == sizeof(TYPE) * 8 - 1) return 0;
-	return bits & ~(((TYPE)1 << (i + 1)) - 1);
+	return bits & (~(TYPE)0 << (i + 1));
 }
 
 /**
@@ -203,12 +202,26 @@ template<typename TYPE>
 TYPE
 next_same_bit_counts(TYPE bits)
 {
+//	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
+//		if (!(bits & ((TYPE)1 << i))) continue;
+//		if (bits & ((TYPE)1 << i + 1)) continue;
+//		bits &= ~((TYPE)1 << i);
+//		bits |= (TYPE)1 << i + 1;
+//		size_t j = count_bits<TYPE>(bits & (((TYPE)1 << i) - 1));
+//		bits &= ~(TYPE)0 << i;
+//		bits |= ~(~(TYPE)0 << j);
+//		return bits;
+//	}
+
+	bool t;
+	size_t c[2] = {0, 0};
 	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
-		if (!(bits & ((TYPE)1 << i))) continue;
-		if (bits & ((TYPE)1 << (i+1))) continue;
-		bits &= ~((TYPE)1 << i);
-		bits |= (TYPE)1 << (i + 1);
-		return bits;
+		t = (bool)(bits & ((TYPE)1 << i));
+		if (!t || (bits & ((TYPE)1 << i + 1))) {
+			c[(size_t)t]++;
+			continue;
+		}
+		return bits + ((TYPE)1 << c[0]) + ((TYPE)1 << c[1]) - 1;
 	}
 
 	return bits;
@@ -225,12 +238,26 @@ template<typename TYPE>
 TYPE
 previous_same_bit_counts(TYPE bits)
 {
+//	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
+//		if (bits & ((TYPE)1 << i)) continue;
+//		if (!(bits & ((TYPE)1 << i + 1))) continue;
+//		bits |= (TYPE)1 << i;
+//		bits &= ~((TYPE)1 << i + 1);
+//		size_t j = count_bits<TYPE>(bits & (((TYPE)1 << i) - 1));
+//		bits |= ~(~(TYPE)0 << i);
+//		bits &= ~(TYPE)0 << i - j;
+//		return bits;
+//	}
+
+	bool t;
+	size_t c[2] = {0, 0};
 	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
-		if (bits & ((TYPE)1 << i)) continue;
-		if (!(bits & ((TYPE)1 << (i+1)))) continue;
-		bits |= (TYPE)1 << i;
-		bits &= ~((TYPE)1 << (i + 1));
-		return bits;
+		t = (bool)(bits & ((TYPE)1 << i));
+		if (t || !(bits & ((TYPE)1 << i + 1))) {
+			c[(size_t)t]++;
+			continue;
+		}
+		return bits - ((TYPE)1 << c[1]) - ((TYPE)1 << c[0]) + 1;
 	}
 
 	return bits;
