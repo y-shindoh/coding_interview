@@ -22,7 +22,14 @@ int main()
 	print_bits<unsigned int>(stdout, y);
 
 	print_bits<unsigned int>(stdout, x ^ y);
-	std::printf("=> %lu\n", count_bits<unsigned int>(x ^ y));
+
+	size_t k(0);
+	for (unsigned int i(x ^ y); i; i &= i - 1) {
+		++k;
+	}
+	std::printf("=> %lu\n", k);
+
+//	std::printf("=> %lu\n", count_bits<unsigned int>(x ^ y));
 
 	return 0;
 }
