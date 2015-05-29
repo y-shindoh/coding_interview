@@ -30,9 +30,9 @@ get_number(unsigned int bits)
  */
 int main()
 {
-	// n = 15と仮定
+	// n = 15と仮定 (重複を許す)
 	bool flags[16];	// bucket
-	unsigned int A[] = {0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+	unsigned int A[] = {0, 0, 1, 2, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 	unsigned int k;
 
 	std::memset((void*)flags, 0, sizeof(flags));
@@ -48,6 +48,9 @@ int main()
 		if (flags[k]) continue;
 		std::printf("NOT FOUND: %u\n", k);
 	}
+
+	// 重複がなければ、
+	// 抜けのない場合の合計値から実際の合計値を引くば算出できる。
 
 	return 0;
 }
