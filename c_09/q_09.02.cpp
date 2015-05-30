@@ -17,6 +17,7 @@
  * @note	上か右にしか移動できない前提。
  * @note	テンプレートの型 @a TYPE は総数算出に用いる符号なし整数の型。
  * @note	テンプレートの整数 @a H , @a W は移動先の座標を示す。
+ * @note	処理速度を無視すれば、フィールド @a counts_ は2行でも処理できる。
  */
 template<typename TYPE, size_t H, size_t W>
 class FindRoute
