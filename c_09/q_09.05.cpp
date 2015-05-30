@@ -87,7 +87,7 @@ public:
 
 			execute_routine(0);
 
-			delete output_;
+			delete [] output_;
 
 			return storage_;
 		}
