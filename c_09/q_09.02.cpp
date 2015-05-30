@@ -44,6 +44,9 @@ public:
 	 * 移動できない座標を設定
 	 * @param[in]	i	座標のyの値
 	 * @param[in]	j	座標のxの値
+	 * @note	メソッド @a prepare の後に実施する。
+	 * @note	メソッド @a calculate の前に実施する。
+	 * @note	本メソッドは複数回実行可能。
 	 */
 	void
 	set_obstacle(size_t i,
