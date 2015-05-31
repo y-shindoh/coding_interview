@@ -8,10 +8,8 @@
 
 #include <cstddef>
 #include <cstdio>
-#include <cstring>
 #include <cassert>
 #include <vector>
-#include <string>
 
 /**
  * コインの全ての組み合わせを生成
