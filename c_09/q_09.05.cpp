@@ -105,7 +105,6 @@ int main()
 	std::vector<std::string>* permutation = maker.execute(input, length);
 
 	size_t m = permutation->size();
-	size_t n;
 	for (size_t i(0); i < m; ++i) {
 		std::printf("[%lu] '%s'\n", i, permutation->at(i).c_str());
 	}
