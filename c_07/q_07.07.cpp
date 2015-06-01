@@ -1,7 +1,7 @@
 /* -*- coding: utf-8; tab-width: 4 -*- */
 /**
- * @file	q_07.04.cpp
- * @brief	「世界で闘うプログラミング力を鍛える150問」の問題7.4の回答
+ * @file	q_07.07.cpp
+ * @brief	「世界で闘うプログラミング力を鍛える150問」の問題7.7の回答
  * @author	Yasutaka SHINDOH / 新堂 安孝
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
