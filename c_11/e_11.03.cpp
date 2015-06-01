@@ -41,13 +41,30 @@ MergeSort(TYPE* data,
 
 	size_t i(0), j(center);
 	for (size_t k(0); k < length; ++k) {
+		if (center <= i) break;
 		if (length <= j) buffer[k] = data[i++];
-		else if (center <= i) buffer[k] = data[j++];
 		else if (data[i] <= data[j]) buffer[k] = data[i++];
 		else buffer[k] = data[j++];
 	}
 
-	std::memcpy((void*)data, (const void*)buffer, sizeof(TYPE) * length);
+	std::memcpy((void*)data, (const void*)buffer, sizeof(TYPE) * j);
+}
+
+/**
+ * 配列の表示
+ */
+template<typename TYPE>
+void
+print_array(const TYPE* data,
+			size_t length,
+			const char* prefix = 0)
+{
+	if (prefix) std::printf("%s:\t", prefix);
+	for (size_t i(0); i < length; ++i) {
+		if (0 < i) std::printf(", ");
+		std::printf("%G", (double)data[i]);
+	}
+	std::printf("\n");
 }
 
 /**
@@ -59,21 +76,11 @@ int main()
 	int buffer[10];
 	const size_t l = sizeof(data) / sizeof(data[0]);
 
-	std::printf("BEFORE: ");
-	for (size_t i(0); i < l; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%d", data[i]);
-	}
-	std::printf("\n");
+	print_array<int>(data, l, "BEFORE");
 
 	MergeSort<int>(data, buffer, l);
 
-	std::printf("AFTER:  ");
-	for (size_t i(0); i < l; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%d", data[i]);
-	}
-	std::printf("\n");
+	print_array<int>(data, l, "AFTER");
 
 	return 0;
 }

@@ -37,6 +37,23 @@ InsertionSort(TYPE* data,
 }
 
 /**
+ * 配列の表示
+ */
+template<typename TYPE>
+void
+print_array(const TYPE* data,
+			size_t length,
+			const char* prefix = 0)
+{
+	if (prefix) std::printf("%s:\t", prefix);
+	for (size_t i(0); i < length; ++i) {
+		if (0 < i) std::printf(", ");
+		std::printf("%G", (double)data[i]);
+	}
+	std::printf("\n");
+}
+
+/**
  * 動作確認用コマンド
  */
 int main()
@@ -44,21 +61,11 @@ int main()
 	int data[] = {10, 1, 9, 2, 8, 3, 7, 4, 6, 5};
 	const size_t l = sizeof(data) / sizeof(data[0]);
 
-	std::printf("BEFORE: ");
-	for (size_t i(0); i < l; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%d", data[i]);
-	}
-	std::printf("\n");
+	print_array<int>(data, l, "BEFORE");
 
 	InsertionSort<int>(data, l);
 
-	std::printf("AFTER:  ");
-	for (size_t i(0); i < l; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%d", data[i]);
-	}
-	std::printf("\n");
+	print_array<int>(data, l, "AFTER");
 
 	return 0;
 }
