@@ -25,14 +25,11 @@ InsertionSort(TYPE* data,
 	assert(data);
 	assert(length);
 
-	size_t h;
-	for (size_t i(0); i < length; ++i) {
-		h = i;
-		for (size_t j(i+1); j < length; ++j) {
-			if (data[h] <= data[j]) continue;
-			h = j;
+	for (size_t i(1); i < length; ++i) {
+		while (data[i-1] > data[i]) {
+			std::swap<TYPE>(data[i-1], data[i]);
+			if (--i == 0) break;
 		}
-		if (i != h) std::swap<TYPE>(data[i], data[h]);
 	}
 }
 
