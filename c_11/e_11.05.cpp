@@ -14,10 +14,10 @@
 #include <utility>
 
 /**
- * クイック・ソートの実装
+ * 乱択クイック・ソートの実装
  * @param[in,out]	data	ソート対象の配列
  * @param[in]	length	配列 @a data の長さ
- * @note	計算量は O(n log n)。
+ * @note	計算量は平均 O(n log n)。最悪 O(n^2)。
  */
 template<typename TYPE>
 void
@@ -34,21 +34,21 @@ QuickSort(TYPE* data,
 		return;
 	}
 
-	if (flag) std::srand((unsigned)std::time(0));	// 乱択
+	if (flag) std::srand((unsigned)std::time(0));
 
-	size_t h = (size_t)std::rand() % length;
-	if (0 != h) std::swap(data[h], data[0]);
+	const size_t h = (size_t)std::rand() % length;	// 乱択
+	std::swap<TYPE>(data[0], data[h]);
 	size_t j(1);
 
 	for (size_t i(1); i < length; ++i) {
 		if (data[i] >= data[0]) continue;
-		if (i != j) std::swap(data[i], data[j]);
+		if (i != j) std::swap<TYPE>(data[i], data[j]);
 		++j;
 	}
-	if (1 < j) std::swap(data[0], data[j-1]);	// 適切な場所に移動
+	if (1 < j) std::swap<TYPE>(data[0], data[j-1]);
 
 	if (2 < j) QuickSort<TYPE>(data, j - 1, false);
-	if (1 < length - j) QuickSort<TYPE>(data + j, length - j, false);
+	if (j + 1 < length) QuickSort<TYPE>(data + j, length - j, false);
 }
 
 /**
