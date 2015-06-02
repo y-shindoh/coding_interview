@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <cassert>
 #include <deque>
-#include <utility>
 
 /**
  * 基数ソートの実装 (直接基数法)
