@@ -12,14 +12,22 @@
 #include "utility.hpp"
 
 /**
+ * ソート済み配列にソート済み配列をマージ
+ * @param[in,out]	main_array	マージ先の配列
+ * @param[in]	main_length	配列 @a main_array の要素数
+ * @param[in]	sub_array	マージ相手の配列
+ * @param[in]	sub_length	配列 @a sub_length の要素数
+ * @return	マージ結果の配列の要素数
+ * @note	配列 @a main_array は2つの配列の要素数の和より長いこと。
  * @note	最悪計算量は O(m+n)となる。m, nはそれぞれの配列の長さ。
+ * @note	テンプレートの型 @a TYPE は各配列の要素の型。
  */
 template<typename TYPE>
 size_t
-AddSortedArray(TYPE* main_array,
-			   size_t main_length,
-			   TYPE* sub_array,
-			   size_t sub_length)
+MergeSortedArray(TYPE* main_array,
+				 size_t main_length,
+				 const TYPE* sub_array,
+				 size_t sub_length)
 {
 	assert(main_array);
 	assert(main_length);
@@ -49,7 +57,7 @@ int main()
 	int A[10] = {1, 2, 4, 5, 7};
 	int B[] = {3, 6, 8};
 
-	size_t l = AddSortedArray<int>(A, 5, B, 3);
+	size_t l = MergeSortedArray<int>(A, 5, B, 3);
 
 	print_array<int>(A, l, "DATA");
 
