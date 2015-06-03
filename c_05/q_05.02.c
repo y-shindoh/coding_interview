@@ -60,7 +60,6 @@ make_real_number(const char* buffer)
 {
 	assert(buffer);
 
-	size_t i = 0;
 	double value = 0.0;
 	double base = 1.0;
 
