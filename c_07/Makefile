@@ -6,7 +6,7 @@ EXECUTE	:= $(patsubst %.cpp,%.exe,$(patsubst %.c,%.exe,$(SOURCE)))
 CC			:= clang
 CXX			:= clang++
 CFLAGS		:= -Wall -std=c99
-CXXFLAGS	:= -Wall -std=c++98
+CXXFLAGS	:= -Wall -Weffc++ -std=c++98
 
 %.exe : %.c $(wildcard *.h)
 	# create: $@
@@ -24,8 +24,10 @@ check: $(EXECUTE)
 		fi \
 	done
 
+all: $(EXECUTE)
+
 clean:
 	rm -f $(EXECUTE)
 	find . -name '*~' -print0 | xargs -0 rm -f
 
-.PHONY: check clean
+.PHONY: check all clean
