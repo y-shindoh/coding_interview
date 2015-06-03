@@ -7,11 +7,11 @@
  */
 
 #include <cstddef>
-#include <cstdio>
 #include <ctime>
 #include <cstdlib>
 #include <cassert>
 #include <utility>
+#include "utility.hpp"
 
 /**
  * 乱択クイック・ソートの実装
@@ -49,23 +49,6 @@ QuickSort(TYPE* data,
 
 	if (2 < j) QuickSort<TYPE>(data, j - 1, false);
 	if (j + 1 < length) QuickSort<TYPE>(data + j, length - j, false);
-}
-
-/**
- * 配列の表示
- */
-template<typename TYPE>
-void
-print_array(const TYPE* data,
-			size_t length,
-			const char* prefix = 0)
-{
-	if (prefix) std::printf("%s:\t", prefix);
-	for (size_t i(0); i < length; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%G", (double)data[i]);
-	}
-	std::printf("\n");
 }
 
 /**

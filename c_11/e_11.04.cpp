@@ -7,10 +7,10 @@
  */
 
 #include <cstddef>
-#include <cstdio>
 #include <cstring>
 #include <cassert>
 #include <utility>
+#include "utility.hpp"
 
 /**
  * マージ・ソートの実装
@@ -48,23 +48,6 @@ MergeSort(TYPE* data,
 	}
 
 	std::memcpy((void*)data, (const void*)buffer, sizeof(TYPE) * j);
-}
-
-/**
- * 配列の表示
- */
-template<typename TYPE>
-void
-print_array(const TYPE* data,
-			size_t length,
-			const char* prefix = 0)
-{
-	if (prefix) std::printf("%s:\t", prefix);
-	for (size_t i(0); i < length; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%G", (double)data[i]);
-	}
-	std::printf("\n");
 }
 
 /**

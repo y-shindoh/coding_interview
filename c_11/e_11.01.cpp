@@ -7,9 +7,9 @@
  */
 
 #include <cstddef>
-#include <cstdio>
 #include <cassert>
 #include <utility>
+#include "utility.hpp"
 
 /**
  * バブル・ソートの実装
@@ -35,23 +35,6 @@ BubbleSort(TYPE* data,
 
 		if (!flag) break;
 	}
-}
-
-/**
- * 配列の表示
- */
-template<typename TYPE>
-void
-print_array(const TYPE* data,
-			size_t length,
-			const char* prefix = 0)
-{
-	if (prefix) std::printf("%s:\t", prefix);
-	for (size_t i(0); i < length; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%G", (double)data[i]);
-	}
-	std::printf("\n");
 }
 
 /**

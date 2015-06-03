@@ -7,9 +7,9 @@
  */
 
 #include <cstddef>
-#include <cstdio>
 #include <cassert>
 #include <deque>
+#include "utility.hpp"
 
 /**
  * 基数ソートの実装 (直接基数法)
@@ -18,6 +18,7 @@
  * @note	計算量は平均 O(kn)。ただし k = log_N M (Mは @a data の最大値)。
  * @note	テンプレートの型 @a TYPE は符号なし整数を指定すること。
  * @note	テンプレートの整数 @a N はバケットの大きさ。
+ * @todo	std::dequeではなく2つのN*length配列で処理するように変更する。
  */
 template<typename TYPE, size_t N>
 void
@@ -61,23 +62,6 @@ RadixSort(TYPE* data,
 		buckets[0].pop_front();
 		data[i] = t;
 	}
-}
-
-/**
- * 配列の表示
- */
-template<typename TYPE>
-void
-print_array(const TYPE* data,
-			size_t length,
-			const char* prefix = 0)
-{
-	if (prefix) std::printf("%s:\t", prefix);
-	for (size_t i(0); i < length; ++i) {
-		if (0 < i) std::printf(", ");
-		std::printf("%G", (double)data[i]);
-	}
-	std::printf("\n");
 }
 
 /**
