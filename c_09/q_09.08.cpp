@@ -39,8 +39,7 @@ private:
 			}
 
 			if (coin_types_[i]) {
-				for (size_t j(0); ; ++j) {
-					if (value < coin_types_[i] * (TYPE)j) break;
+				for (size_t j(0); coin_types_[i] * (TYPE)j <= value; ++j) {
 					buffer_[i] = (TYPE)j;
 					execute_routine(value - coin_types_[i] * (TYPE)j, i + 1);
 				}
@@ -93,7 +92,7 @@ public:
  */
 int main()
 {
-	const unsigned int coins[] = {1, 5, 10, 25};
+	const unsigned int coins[] = {25, 10, 5, 1};
 	const size_t length = sizeof(coins) / sizeof(coins[0]);
 	unsigned int value(30);
 
