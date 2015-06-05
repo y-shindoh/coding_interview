@@ -7,12 +7,11 @@
  */
 
 #include <cstddef>
-#include <cstring>
 #include <cassert>
 #include "utility.hpp"
 
 /**
- * ソート済み配列にソート済み配列をマージ
+ * 昇順ソート済み配列に昇順ソート済み配列をマージ
  * @param[in,out]	main_array	マージ先の配列
  * @param[in]	main_length	配列 @a main_array の要素数
  * @param[in]	sub_array	マージ相手の配列
@@ -34,19 +33,19 @@ MergeSortedArray(TYPE* main_array,
 	assert(sub_array);
 	assert(sub_length);
 
-	std::memmove((void*)(main_array + sub_length),
-				 (const void*)main_array, main_length * sizeof(TYPE));
+	int i = (int)main_length - 1;
+	int j = (int)sub_length - 1;
+	int k = (int)main_length + sub_length - 1;
 
-	size_t h(sub_length), k(0);
-	size_t max_length = main_length + sub_length;
-	for (size_t i(0); i < max_length; ++i) {
-		if (sub_length <= k) break;
-		if (max_length <= h) main_array[i] = sub_array[k++];
-		else if (main_array[h] < sub_array[k]) main_array[i] = main_array[h++];
-		else main_array[i] = sub_array[k++];
+	while (0 <= k) {
+		if (j < 0) break;
+		if (i < 0) main_array[k] = sub_array[j--];
+		else if (main_array[i] <= sub_array[j]) main_array[k] = sub_array[j--];
+		else main_array[k] = main_array[i--];
+		--k;
 	}
 
-	return max_length;
+	return main_length + sub_length;
 }
 
 /**
