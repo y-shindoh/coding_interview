@@ -24,13 +24,16 @@ sort_pairs_array(std::pair<TYPE, TYPE>* data,
 {
 	bool flag;
 	size_t k;
+	std::pair<TYPE, TYPE> tmp;
 
 	for (size_t i(0); i < length; ++i) {
 		k = length - i;
 		flag = false;
 		for (size_t j(1); j < k; ++j) {
 			if (data[j-1].first >= data[j].first) continue;
-			data[j-1].swap(data[j]);
+			tmp = data[j-1];
+			data[j-1] = data[j];
+			data[j] = tmp;
 			flag = true;
 		}
 		if (!flag) break;
@@ -41,7 +44,9 @@ sort_pairs_array(std::pair<TYPE, TYPE>* data,
 		flag = false;
 		for (size_t j(1); j < k; ++j) {
 			if (data[j-1].second >= data[j].second) continue;
-			data[j-1].swap(data[j]);
+			tmp = data[j-1];
+			data[j-1] = data[j];
+			data[j] = tmp;
 			flag = true;
 		}
 		if (!flag) break;

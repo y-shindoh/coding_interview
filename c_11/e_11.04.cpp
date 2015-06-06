@@ -31,7 +31,11 @@ MergeSort(TYPE* data,
 
 	if (length <= 1) return;
 	if (length == 2) {
-		if (data[0] > data[1]) std::swap<TYPE>(data[0], data[1]);
+		if (data[0] > data[1]) {
+			TYPE tmp(data[0]);
+			data[0] = data[1];
+			data[1] = tmp;
+		}
 		return;
 	}
 

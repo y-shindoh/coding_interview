@@ -25,11 +25,15 @@ BubbleSort(TYPE* data,
 	assert(data);
 	assert(length);
 
+	TYPE tmp;
+
 	for (size_t h(length); 1 < h; --h) {
 		bool flag(false);
 		for (size_t i(0), j(1); j < h; ++i, ++j) {
 			if (data[i] <= data[j]) continue;
-			std::swap<TYPE>(data[i], data[j]);
+			tmp = data[i];
+			data[i] = data[j];
+			data[j] = tmp;
 			flag = true;
 		}
 

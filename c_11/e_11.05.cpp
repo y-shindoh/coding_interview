@@ -28,24 +28,40 @@ QuickSort(TYPE* data,
 	assert(data);
 	assert(length);
 
+	TYPE tmp;
+
 	if (length <= 1) return;
 	if (length == 2) {
-		if (data[0] > data[1]) std::swap<TYPE>(data[0], data[1]);
+		if (data[0] > data[1]) {
+			tmp = data[0];
+			data[0] = data[1];
+			data[1] = tmp;
+		}
 		return;
 	}
 
 	if (flag) std::srand((unsigned)std::time(0));
 
 	const size_t h = (size_t)std::rand() % length;	// 乱択
-	std::swap<TYPE>(data[0], data[h]);
+	tmp = data[0];
+	data[0] = data[h];
+	data[h] = tmp;
 	size_t j(1);
 
 	for (size_t i(1); i < length; ++i) {
 		if (data[i] >= data[0]) continue;
-		if (i != j) std::swap<TYPE>(data[i], data[j]);
+		if (i != j) {
+			tmp = data[i];
+			data[i] = data[j];
+			data[j] = tmp;
+		}
 		++j;
 	}
-	if (1 < j) std::swap<TYPE>(data[0], data[j-1]);
+	if (1 < j) {
+		tmp = data[0];
+		data[0] = data[j-1];
+		data[j-1] = tmp;
+	}
 
 	if (2 < j) QuickSort<TYPE>(data, j - 1, false);
 	if (j + 1 < length) QuickSort<TYPE>(data + j, length - j, false);

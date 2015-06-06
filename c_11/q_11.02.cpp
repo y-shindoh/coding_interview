@@ -99,13 +99,16 @@ sort_pairs_array(std::pair<LetterChecker<TYPE>, size_t>* data,
 
 	bool flag;
 	size_t k;
+	std::pair<LetterChecker<TYPE>, size_t> tmp;
 
 	for (size_t i(0); i < length; ++i) {
 		k = length - i;
 		flag = false;
 		for (size_t j(1); j < k; ++j) {
 			if (LetterChecker<TYPE>::Compare(data[j-1].first, data[j].first) <= 0) continue;
-			data[j-1].swap(data[j]);
+			tmp = data[j-1];
+			data[j-1] = data[j];
+			data[j] = tmp;
 			flag = true;
 		}
 		if (!flag) break;

@@ -8,7 +8,6 @@
 
 #include <cstddef>
 #include <cassert>
-#include <utility>
 #include "utility.hpp"
 
 /**
@@ -32,7 +31,11 @@ SelectionSort(TYPE* data,
 			if (data[h] <= data[j]) continue;
 			h = j;
 		}
-		if (i != h) std::swap<TYPE>(data[i], data[h]);
+		if (i != h) {
+			TYPE tmp(data[i]);
+			data[i] = data[h];
+			data[h] = tmp;
+		}
 	}
 }
 
