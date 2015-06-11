@@ -30,11 +30,11 @@ check_rotated(const char* string_1,
 	if (l1 != l2) return false;
 
 	strcpy(buffer, string_1);
-	strcat(buffer, string_1);
+	strcat(buffer, string_2);
 
 	// 問題文にある「is_substring<f>」を「strstr<f>」で代替。
 	// (see http://www.c-tipsref.com/reference/string/strstr.html )
-	return strstr(buffer, string_2) == NULL;
+	return strstr(buffer, string_2) != NULL;
 }
 
 /**
