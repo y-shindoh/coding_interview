@@ -38,8 +38,6 @@ find_in_matrix(const TYPE matrix[N][N],
 	assert(h <= N);
 	assert(w <= N);
 
-	std::printf("<%lu:%lu => %lu:%lu>\n", i, j, h, w);
-
 	const size_t g(i);
 	const size_t k(j);
 
