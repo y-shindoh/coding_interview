@@ -9,44 +9,48 @@
 #include <stddef.h>
 #include <stdio.h>
 
-int flip(int x)
-{
-	return 1 ^ x;
-}
-
 int sign(int x)
 {
-	return flip((x >> (sizeof(x) * 8 - 1)) & 1);
+	return 1 ^ ((x >> (sizeof(x) * 8 - 1)) & 1);
 }
 
 int myMax(int a, int b)
 {
-	int sa = sign(a);	// a >= 0 => 1, otherwise => 0
-	int sb = sign(b);	// b >= 0 => 1, otherwise => 0
+	int sa = sign(a);	// a >= 0 ⇒ sa = 1, a < 0 ⇒ sa = 0
+	int sb = sign(b);	// b >= 0 ⇒ sb = 1, b < 0 ⇒ sb = 0
 
 	/*
 	  1. a >= 0, b >= 0
-		- オーバーフローした => ない
-		- a >= b => 1
-		- b > a => 0
-	  2. a >=0, b < 0 【不要】
-		- オーバーフローした => 0
-		- オーバーフローしていない => 1
-	  3. a < 0, b >= 0 【不要】
-		- オーバーフローした => 1
-		- オーバーフローしていない => 0
-	  4. a < 0, b < 0
-		- オーバーフローした => ない
-		- a <= b => 0
-		- b < a => 1
+		- a >= b ⇒ sc = 1
+		- b > a ⇒ sc = 0
+	  2. a < 0, b < 0
+		- a <= b ⇒ sc = 0
+		- b < a ⇒ sc = 1
+	  3. a >=0, b < 0 【不要】
+	  4. a < 0, b >= 0 【不要】
+
+	  ※ 3, 4の場合のみ a - b にオーバーフローの可能性がある。
 	 */
 	int sc = sign(a - b);
 
-	int p = sa ^ sb;	// aとbが異なる符号を持つ場合、k = sign(a)
-	int q = flip(p);	// aとbが同じ符号を持つ場合、k = sign(a-b)
+	/*
+	  1. a と b が異なる符号を持つ場合 ⇒ p = 1, q = 0
+	  2. a と b が同じ符号を持つ場合 ⇒ p = 0, q = 1
+	 */
+	int p = sa ^ sb;
+	int q = 1 ^ p;
 
+	/*
+	  1. a と b が異なる符号を持つ場合 k = sa を考える。
+		- a >= 0 ⇒ k = 1, h = 0
+		- b >= 0 ⇒ k = 0, h = 1
+	  2. a と b が同じ符号を持つ場合 k = sc を考える。
+		- a > b ⇒ k = 1, h = 0
+		- a < b ⇒ k = 0, h = 1
+		- a == b ⇒ k = 1, h = 0 または k = 0, h = 1
+	 */
 	int k = p * sa + q * sc;
-	int h = flip(k);
+	int h = 1 ^ k;
 
 	return a * k + b * h;
 }
