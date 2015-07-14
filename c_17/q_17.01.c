@@ -22,8 +22,8 @@ int main()
 	printf("b = %d\n", b);
 
 	a = a - b;	// 差分
-	b += a;
-	a = b - a;
+	b += a;		// b = b + (a - b) = a
+	a = b - a;	// a = a - (a - b) = b
 
 	printf("[1]\n");
 	printf("a = %d\n", a);
