@@ -9,11 +9,23 @@
 #include <stddef.h>
 #include <stdio.h>
 
+/**
+ * 整数の符号情報を抽出
+ * @param[in]	x	抽出対象の整数
+ * @return	1: 引数 @a x は0以上, 0: 引数 @a x は負の数
+ */
 int sign(int x)
 {
 	return 1 ^ ((x >> (sizeof(x) * 8 - 1)) & 1);
 }
 
+/**
+ * 2つの整数から大きなものを選出
+ * @param[in]	a	整数 (その1)
+ * @param[in]	b	整数 (その2)
+ * @reurn	引数 @a a と @a b のうち大きい方
+ * @note	条件分岐および比較演算子を使わないという制約がある。
+ */
 int myMax(int a, int b)
 {
 	int sa = sign(a);	// a >= 0 ⇒ sa = 1, a < 0 ⇒ sa = 0
