@@ -18,7 +18,7 @@
  * @note	計算量は O(n)。ただし n は引数 @a length と等しい。
  */
 size_t search_left(const int* data,
-					size_t length)
+				   size_t length)
 {
 	assert(data);
 	assert(length);
@@ -33,7 +33,7 @@ size_t search_left(const int* data,
 			min = data[j];
 		}
 		else {
-			k = j;
+			k = j;	// この位置に min が来る ⇒ 要ソート
 		}
 	}
 
@@ -61,20 +61,22 @@ size_t search_right(const int* data,
 			max = data[i];
 		}
 		else {
-			k = i;
+			k = i;	// この位置に max が来る ⇒ 要ソート
 		}
 	}
 
 	return k;
 }
 
-/**
- * 動作確認用コマンド
- */
-int main()
+void test(int* data,
+		  size_t length)
 {
-	int data[] = {1, 2, 4, 7, 10, 11, 7, 12, 6, 7, 16, 18, 19};
-	size_t length = sizeof(data) / sizeof(data[0]);
+	for (size_t i = 0; i < length; ++i) {
+		if (0 < i) printf(", ");
+		printf("a[%lu]=%d", i, data[i]);
+	}
+	printf("\n");
+
 	size_t k;	// ソートすべき始点・終点インデックス
 
 	k = search_left(data, length);
@@ -82,6 +84,18 @@ int main()
 
 	k = search_right(data, length);
 	printf("right: data[%lu] = %d\n", k, data[k]);
+}
+
+/**
+ * 動作確認用コマンド
+ */
+int main()
+{
+	int data1[] = {1, 2, 4, 7, 10, 11, 7, 12, 6, 7, 16, 18, 19};
+	test(data1, sizeof(data1) / sizeof(data1[0]));
+
+	int data2[] = {1, 20, 2, 4, 7, 10, 11, 7, 12, 3, 6, 7, 16, 18, 19};
+	test(data2, sizeof(data2) / sizeof(data2[0]));
 
 	return 0;
 }
