@@ -20,7 +20,7 @@ check: $(EXECUTE)
 	@for e in $^ ; do \
 		if [ -e $${e} ]; then \
 			printf "# execute: $${e}\n"; \
-			./$${e}; \
+			./$${e} < input.txt; \
 		fi \
 	done
 
