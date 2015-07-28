@@ -10,6 +10,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h>
+
+_Bool flag = false;	///< ランダム処理の初期化
+
+/**
+ * 0以上指定値未満の整数をランダムに生成
+ * @param[in]	l	指定値
+ * @return	ランダムに生成された整数
+ */
+size_t MyRand(size_t l)
+{
+	if (!flag) srand((unsigned) time(NULL));
+
+	return (size_t)rand() % l;
+}
 
 /**
  * 配列を確率的な偏りなく完全にシャッフル
@@ -19,12 +34,10 @@
 void shuffle(int data[],
 			 size_t length)
 {
-	srand((unsigned) time(NULL));
-
-	int j;
+	size_t j;
 	int t;
 	for (size_t i = 0; i < length; ++i) {
-		j = rand() % (length - i) + i;	// 完全な等確率と仮定
+		j = MyRand(length - i) + i;	// 完全な等確率と仮定
 		t = data[i];
 		data[i] = data[j];
 		data[j] = t;
