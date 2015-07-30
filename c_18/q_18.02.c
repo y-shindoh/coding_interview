@@ -18,12 +18,16 @@ _Bool flag = false;	///< ランダム処理の初期化
  * 0以上指定値未満の整数をランダムに生成
  * @param[in]	l	指定値
  * @return	ランダムに生成された整数
+ * @note	完全な等確率で各数値が出力されると仮定する。
  */
 size_t MyRand(size_t l)
 {
-	if (!flag) srand((unsigned) time(NULL));
+	if (!flag) {
+		flag = true;
+		srand((unsigned)time(NULL));
+	}
 
-	return (size_t)rand() % l;
+	return (size_t)((double)l * (double)rand() / ((double)RAND_MAX + 1.0));
 }
 
 /**
@@ -37,7 +41,7 @@ void shuffle(int data[],
 	size_t j;
 	int t;
 	for (size_t i = 0; i < length; ++i) {
-		j = MyRand(length - i) + i;	// 完全な等確率と仮定
+		j = MyRand(length - i) + i;
 		t = data[i];
 		data[i] = data[j];
 		data[j] = t;
