@@ -17,6 +17,7 @@
  */
 size_t MyAdd(size_t x, size_t y)
 {
+	// 一方の整数が0ならもう一方の整数が和
 	if (y == 0) return x;
 	if (x == 0) return y;
 
