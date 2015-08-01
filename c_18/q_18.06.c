@@ -47,8 +47,6 @@ size_t select(size_t* data,
 			  size_t start,
 			  size_t end)
 {
-	if (start == end && start == index) return data[index];
-
 	size_t k = MyRand(end + 1 - start) + start;
 	size_t j = start;
 	size_t d = data[k];
@@ -56,6 +54,7 @@ size_t select(size_t* data,
 
 	for (size_t i = start; i <= end; ++i) {
 		if (data[i] > d) continue;
+		if (i == k) k = j;
 		t = data[i];
 		data[i] = data[j];
 		data[j] = t;
@@ -63,11 +62,20 @@ size_t select(size_t* data,
 	}
 	--j;	// 注意: 絶対に「start」以上。
 
-	if (index <= j) {
-		return select(data, index, start, j);
+	if (k != j) {
+		t = data[k];
+		data[k] = data[j];
+		data[j] = t;
+	}
+
+	if (index < j) {
+		return select(data, index, start, j - 1);
+	}
+	else if (j < index) {
+		return select(data, index, j + 1, end);
 	}
 	else {
-		return select(data, index, j + 1, end);
+		return data[index];
 	}
 }
 
