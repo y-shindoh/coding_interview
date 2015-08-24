@@ -10,54 +10,43 @@
 #include <cstdio>
 #include <cstring>
 
+#define	BUFFER_LENGTH	((size_t)0x100)
+
 /**
- * @class	1つの文字を複数含んでいるかチェック
- * @note	US-ASCIIのみに対応。US-ASCII内の全ての文字を扱う。
- * @note	実質的にはUS-ASCIIの文字種数を長さに持つただの配列。
- * @note	基本的なアイディアはバケット・ソート。
+ * 文字列中に同一文字があるか否かを確認
+ * @param[out]	buffer	作業領域
+ * @param[in]	string	確認対象の文字列
+ * @return	true: 同一文字があった, false: なかった
+ * @note	処理対象はUS-ASCII, UTF-16に限定する。
+ * @note	最悪計算量は O(m)。ただし m は N か入力文字列の長さの大きい方。
  */
-class LetterChecker
+template<typename TYPE, size_t N>
+bool
+check_duplicated_letter(bool buffer[N],
+						const TYPE* string)
 {
-private:
+	std::memset((void*)buffer, 0, sizeof(bool) * N);
+	size_t i;
 
-	bool buffer_[0x100];	///< 出現文字のフラグ
+	while (*string) {
+		i = (size_t)*string++;
+		if (buffer[i]) return true;
+		buffer[i] = true;
+	}
 
-public:
-
-	/**
-	 * 文字列の重複文字の有無をチェック
-	 * @param[in]	string	チェック対象の文字列
-	 * @return	true: 重複文字あり, false: 重複文字なし
-	 */
-	bool
-	execute(const char* string)
-		{
-			size_t l = std::strlen(string);
-			if (0x100 <= l) return true;
-
-			std::memset((void*)buffer_, 0, sizeof(buffer_));
-			int k;
-			for (size_t i(0); i < l; ++i) {
-				k = 0xFF & (int)string[i];
-				if (buffer_[k]) return true;
-				buffer_[k] = true;
-			}
-
-			return false;
-		}
-};
+	return false;
+}
 
 /**
  * 動作確認用コマンド
  */
 int main()
 {
-	char sample[][1024] = {"AbCdBC.", "AbCdBc."};
-
-	LetterChecker* checker = new LetterChecker();
+	bool buffer[BUFFER_LENGTH];
+	const char sample[][1024] = {"AbCdBC.", "AbCdBc."};
 
 	for (size_t i(0); i < sizeof(sample)/sizeof(sample[0]); ++i) {
-		if (checker->execute(sample[i])) {
+		if (check_duplicated_letter<char, BUFFER_LENGTH>(buffer, sample[i])) {
 			std::printf("FOUND     ");
 		}
 		else {
@@ -65,8 +54,6 @@ int main()
 		}
 		std::printf("'%s'\n", sample[i]);
 	}
-
-	delete checker;
 
 	return 0;
 }
