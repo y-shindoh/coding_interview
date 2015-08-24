@@ -6,9 +6,18 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  ある文字列が、すべてユニークである (重複する文字がない) かどうかを
+  判定するアルゴリズムを実装してください。
+  また、それを実装するのに新たなデータ構造が使えない場合、
+  どのようにすればよいですか?
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 
 #define	BUFFER_LENGTH	((size_t)0x100)
 
@@ -25,6 +34,9 @@ bool
 check_duplicated_letter(bool buffer[N],
 						const TYPE* string)
 {
+	assert(buffer);
+	assert(string);
+
 	std::memset((void*)buffer, 0, sizeof(bool) * N);
 	size_t i;
 
