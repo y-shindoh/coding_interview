@@ -6,128 +6,80 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  2つの文字列が与えられたとき、
+  片方がもう片方の並び替えになっているかどうかを決定するメソッドを書いてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
 #include <cassert>
-#include <vector>
+
+#define	BUFFER_LENGTH	((size_t)0x100)
 
 /**
- * @class	文字をカウントするクラス
- * @note	テンプレートの型 @a TYPE には符号なし整数を指定すること。
- * @note	US-ASCIIのみに対応。より広い空間を扱う場合はHashテーブルなどが必要。
- * @note	実質的にはUS-ASCIIの文字種数を長さに持つただの配列。
- * @note	基本的なアイディアはバケット・ソート。
+ * 2つの文字列が並び替えの関係にあるか確認
+ * @param[out]	buffer	作業領域
+ * @param[in]	s1	確認対象の文字列
+ * @param[in]	s2	確認対象の文字列
+ * @return	true: 並び替えの関係にある, false: ない
+ * @note	処理対象はUS-ASCIIに限定する。大文字小文字を区別する。
+ * @note	最悪計算量は O(n)。ただし n は BUFFER_LENGTH かそれぞれの入力文字列の長さの最大値。
  */
-template<typename TYPE>
-class LetterChecker
+bool
+check_anagram(int buffer[BUFFER_LENGTH],
+			  const char* s1,
+			  const char* s2)
 {
-private:
+	std::memset((void*)buffer, 0, sizeof(int) * BUFFER_LENGTH);
+	size_t i;
+	int n(0);
 
-	std::vector<TYPE> buffer_;	///< 各文字のカウント
-	size_t number_of_types_;	///< 文字種のカウント
+	while (*s1) {
+		i = (size_t)*s1++;
+		buffer[i]++;
+		n++;
+	}
 
-public:
+	while (*s2) {
+		i = (size_t)*s2++;
+		buffer[i]--;
+		n--;
+	}
 
-	/**
-	 * コンストラクタ
-	 */
-	LetterChecker()
-		: number_of_types_(0)
-		{
-			buffer_.resize((size_t)0x100, (TYPE)0);
-		}
+	if (!n) return false;	// 長さが異なる
 
-	/**
-	 * 文字を追加
-	 * @param[in]	string	文字列
-	 */
-	void
-	count(const char* string)
-		{
-			size_t j;
-			for (size_t i(0); string[i]; ++i) {
-				j = 0xFF & (size_t)string[i];	// 冗長?
-				if (!buffer_[j]) ++number_of_types_;
-				buffer_[j]++;
-				assert(buffer_[j] < (TYPE)~(TYPE)0);
-			}
-		}
+	for (size_t j(0); j < BUFFER_LENGTH; ++j) {
+		if (buffer[j]) return false;
+	}
 
-	/**
-	 * 文字の出現数を比較
-	 * @param[in]	other	比較対象の @a LetterChecker オブジェクト
-	 * @return	true: 全文字種で出現数が等しい, false: 等しくない出現数の文字があった
-	 * @note	trueが返却された場合、
-				2つの @a LetterChecker オブジェクトが読み込んだそれぞれの文字列は、
-				一方の順番を入れ替えればもう一方と等しい文字列になる。
-	 */
-	bool
-	equal(const LetterChecker<TYPE>* other) const
-		{
-			if (number_of_types_ != other->number_of_types_) return false;
-
-			for (size_t i(0); i < (size_t)0x100; ++i) {
-				if (buffer_[i] != other->buffer_[i]) return false;
-			}
-
-			return true;
-		}
-
-	/**
-	 * 文字の出現数を比較
-	 * @param[in]	left	比較対象の @a LetterChecker オブジェクト
-	 * @param[in]	right	比較対象の @a LetterChecker オブジェクト
-	 * @return	true: 全文字種で出現数が等しい, false: 等しくない出現数の文字があった
-	 * @note	trueが返却された場合、
-				2つの @a LetterChecker オブジェクトが読み込んだそれぞれの文字列は、
-				一方の順番を入れ替えればもう一方と等しい文字列になる。
-	 */
-	static bool
-	Equal(const LetterChecker<TYPE>* left,
-		  const LetterChecker<TYPE>* right)
-		{
-			return left->equal(right);
-		}
-};
+	return true;
+}
 
 /**
  * 動作確認用コマンド
  */
 int main()
 {
-	////////////////////////////////////////////////////////////
-	// - 大文字と小文字は区別する。
-	// - US-ASCIIの全ての文字を処理対象とする。
-	// - 文字列長が異なれば、入れ替えでは同一の文字列に変換できない。
+	int buffer[BUFFER_LENGTH];
 	char sample[][16] = {"AbCdBC.", "AbcdBC.", "CdB.bCA"};
-
-	LetterChecker<unsigned char>* checker[] = {0, 0, 0};
-	const size_t l = sizeof(checker)/sizeof(checker[0]);
+	const size_t l = sizeof(sample) / sizeof(sample[0]);
 
 	for (size_t i(0); i < l; ++i) {
-		std::printf("[%lu]\t'%s'\n", i, sample[i]);
+		std::printf("%lu: '%s'\n", i, sample[i]);
 	}
 
-	for (size_t i(0); i < l; ++i) {
-		checker[i] = new LetterChecker<unsigned char>();
-		checker[i]->count(sample[i]);
-	}
-
-	bool flag;
 	for (size_t i(0); i < l; ++i) {
 		for (size_t j(i+1); j < l; ++j) {
-			flag = LetterChecker<unsigned char>::Equal(checker[i], checker[j]);
-			if (flag) {
+			if (check_anagram(buffer, sample[i], sample[j])) {
 				std::printf("%lu == %lu\n", i, j);
 			}
 			else {
 				std::printf("%lu != %lu\n", i, j);
 			}
 		}
-	}
-
-	for (size_t i(0); i < l; ++i) {
-		delete checker[i];
 	}
 
 	return 0;
