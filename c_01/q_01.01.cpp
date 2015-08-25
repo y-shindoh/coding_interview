@@ -26,18 +26,17 @@
  * @param[out]	buffer	作業領域
  * @param[in]	string	確認対象の文字列
  * @return	true: 同一文字があった, false: なかった
- * @note	処理対象はUS-ASCII, UTF-16に限定する。
- * @note	最悪計算量は O(m)。ただし m は N か入力文字列の長さの大きい方。
+ * @note	処理対象はUS-ASCIIに限定する。大文字小文字を区別する。
+ * @note	最悪計算量は O(m)。ただし m は BUFFER_LENGTH か入力文字列の長さの大きい方。
  */
-template<typename TYPE, size_t N>
 bool
-check_duplicated_letter(bool buffer[N],
-						const TYPE* string)
+check_duplicated_letter(bool buffer[BUFFER_LENGTH],
+						const char* string)
 {
 	assert(buffer);
 	assert(string);
 
-	std::memset((void*)buffer, 0, sizeof(bool) * N);
+	std::memset((void*)buffer, 0, sizeof(bool) * BUFFER_LENGTH);
 	size_t i;
 
 	while (*string) {
@@ -58,7 +57,7 @@ int main()
 	const char sample[][1024] = {"AbCdBC.", "AbCdBc."};
 
 	for (size_t i(0); i < sizeof(sample)/sizeof(sample[0]); ++i) {
-		if (check_duplicated_letter<char, BUFFER_LENGTH>(buffer, sample[i])) {
+		if (check_duplicated_letter(buffer, sample[i])) {
 			std::printf("FOUND     ");
 		}
 		else {
