@@ -20,6 +20,8 @@
 /**
  * 文字列を破壊的に反転
  * @param[in,out]	s	入力文字列・出力文字列 (s/str/s/g)
+ * @note	処理対象はUS-ASCIIに限定する。
+ * @note	最悪計算量は O(n)。ただし n は入力文字列の長さ。
  */
 void
 reverse(char* s)
