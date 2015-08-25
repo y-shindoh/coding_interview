@@ -6,88 +6,107 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  文字の連続する数を使って基本的な文字圧縮を行うメソッドを実装してください。
+  たとえば、「aabcccccaaa」は「a2b1c5a3」のようにしてください。
+  もし、圧縮変換された文字列が元の文字列よりも短くならなかった場合は、
+  元の文字列を返してください。
+ */
+
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 #include <vector>
 
 /**
- * 文字列圧縮後の長さの算出
- * @param[in]	string	圧縮対象の文字列
- * @note	圧縮方法は "aaabbcaaa" => "a3b2c1a3" というもの。
- * @note	対象は US-ASCII のみとする。
+ * 圧縮後の文字列長を算出
+ * @param[in]	s	圧縮対象の文字列
+ * @note	処理対象は US-ASCII。
+ * @note	最悪計算量は O(n)。ただし n は引数 @a s の長さ。
  */
 size_t
-replaced_string_length(const char* string)
+compressed_length(const char* s)
 {
-	const size_t l = std::strlen(string);
+	assert(s);
+
+	size_t c(0);
 	size_t n(0);
+	char p = '\0';
 
-	if (0 < l) {
-		char c('\0');
-		size_t m(1);
-
-		for (size_t i(0); i <= l; ++i) {
-			if (c == string[i]) {
-				++m;
-			}
-			else {
-				if (c) {
-					n += 2;
-					while (m /= 10) ++n;
-					m = 1;
+	while (*s) {
+		if (*s != p) {
+			p = *s;
+			if (0 < c) {
+				++n;
+				while (0 < c) {
+					++n;
+					c /= 10;
 				}
-				c = string[i];
 			}
+			c = 1;
+		}
+		else {
+			++c;
+		}
+		++s;
+	}
+
+	if (0 < c) {
+		++n;
+		while (0 < c) {
+			++n;
+			c /= 10;
 		}
 	}
 
 	return n;
 }
 
-
 /**
- * 文字列圧縮
- * @param[in,out]	string	圧縮対象の文字列
- * @note	圧縮方法は "aaabbcaaa" => "a3b2c1a3" というもの。
- * @note	先頭・末尾からの逐次上書きは "ababccccccccccccccabab" などで失敗する。
- * @note	対象は US-ASCII のみとする。
+ * 文字列を圧縮
+ * @param[in,out]	s	処理対象の文字列
+ * @param[out]	buffer_c	作業領域
+ * @param[out]	buffer_i	作業領域
+ * @note	圧縮後の文字列長が圧縮前のそれより長い場合はなにもしない。
+ * @note	処理対象は US-ASCII。
+ * @note	最悪計算量は O(n)。ただし n は引数 @a s の長さ。
+ * @note	最悪メモリ使用量は O(n)。ただし n は引数 @a s の長さ。
+ * @note	バッファ未使用でも実装できそうだが、処理が非常に複雑になる。
  */
 void
-replaced_string(char* string)
+compress_string(char* s,
+				std::vector<char>& buffer_c,
+				std::vector<size_t>& buffer_i)
 {
-	const size_t l = std::strlen(string);
+	assert(s);
 
-	if (l <= replaced_string_length(string)) return;
+	size_t l = std::strlen(s);
 
-	char c('\0');
-	size_t m(1);
-	std::vector<char> letters;	// 逐次上書きを避ける
-	std::vector<int> counts;	// 逐次上書きを避ける
-	letters.reserve(l / 2);
-	counts.reserve(l / 2);
+	if (l < compressed_length(s)) return;
 
-	for (size_t i(0); i <= l; ++i) {
-		if (c == string[i]) {
-			++m;
+	char c = '\0';
+
+	buffer_c.clear();
+	buffer_i.clear();
+
+	for (size_t i(0); i < l; ++i) {
+		if (c != s[i]) {
+			c = s[i];
+			buffer_c.push_back(c);
+			buffer_i.push_back(1);
 		}
 		else {
-			if (c) {
-				letters.push_back(c);
-				counts.push_back(m);
-				m = 1;
-			}
-			c = string[i];
+			buffer_i.back()++;
 		}
 	}
 
-	const size_t n = letters.size();
-	string[0] = '\0';
-	m = 0;
+	l = buffer_c.size();
+	std::memset((void*)s, 0, sizeof(char) * (l + 1));
 
-	for (size_t i(0); i < n; ++i) {
-		while (string[m]) ++m;
-		string[m++] = letters[i];
-		std::sprintf(string+m, "%d", counts[i]);
+	for (size_t i(0); i < l; ++i) {
+		sprintf(s, "%c%lu", buffer_c[i], buffer_i[i]);
+		while (*s) ++s;
 	}
 }
 
@@ -97,16 +116,20 @@ replaced_string(char* string)
 int main()
 {
 	char buffer[][1024] = {"aabcccccaaa",
-						   "aabcccccaaaeeeeeeeeeed"};
-	size_t length;
+						   "aabcccccaaaeeeeeeeeeed",
+						   "ababaa"};
+	size_t l1, l2;
+
+	std::vector<char> buffer_c;
+	std::vector<size_t> buffer_i;
 
 	for (size_t i(0); i < sizeof(buffer)/sizeof(buffer[0]); ++i) {
-		length = std::strlen(buffer[i]);
-		std::printf("'%s' [%lu]\n", buffer[i], length);
+		l1 = std::strlen(buffer[i]);
+		l2 = compressed_length(buffer[i]);
+		std::printf("'%s' [%lu=>%lu]\n", buffer[i], l1, l2);
 
-		length = replaced_string_length(buffer[i]);
-		replaced_string(buffer[i]);
-		std::printf("=> '%s' [%lu]\n", buffer[i], length);
+		compress_string(buffer[i], buffer_c, buffer_i);
+		std::printf("=> '%s'\n", buffer[i]);
 	}
 
 	return 0;
