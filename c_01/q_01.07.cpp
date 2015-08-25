@@ -6,94 +6,111 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  MxNの行列について、要素が0であれば、
+  その行と列をすべて0にするようなアルゴリズムを書いてください。
+ */
+
 #include <cstddef>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
+#include <cassert>
 
 /**
- * @class	行列において0が出現した行・列を全て0に置換するクラス
- * @note	テンプレートの @a TYPE には行列の要素の型を適用する。
- * @note	テンプレートの @a H には行列の行数を適用する。
- * @note	テンプレートの @a W には行列の列数を適用する。
+ * 行列を表示 (動作確認用)
+ * @param[in]	matrix	行列
+ */
+template<size_t H, size_t W>
+void
+print_matrix(const int matrix[H][W])
+{
+	assert(matrix);
+
+	for (size_t i(0); i < H; ++i) {
+		for (size_t j(0); j < W; ++j) {
+			if (0 < j) std::printf(" ");
+			std::printf("%d", matrix[i][j]);
+		}
+		std::printf("\n");
+	}
+}
+
+/**
+ * 行列の0要素を見つけてその行と列の全要素を0に置換するクラス
  */
 template<typename TYPE, size_t H, size_t W>
 class ReplaceMatrix
 {
 private:
 
-	bool line_[H];		///< 行に関する0の出現状況
-	bool column_[W];	///< 列に関する0の出現状況
+	bool row_[H];		///< 0のあった行
+	bool column_[W];	///< 0のあった列
+
+	/**
+	 * 行列を置換する準備 (補助メソッド)
+	 * @param[in]	matrix	行列
+	 * @note	計算量は O(mn)。ただし m, n はそれぞれ引数 @a の高さと幅。
+	 */
+	void
+	prepare(const TYPE matrix[H][W])
+		{
+			assert(matrix);
+
+			std::memset((void*)row_, 0, sizeof(bool) * H);
+			std::memset((void*)column_, 0, sizeof(bool) * W);
+
+			for (size_t i(0); i < H; ++i) {
+				for (size_t j(0); j < W; ++j) {
+					if (matrix[i][j]) continue;
+					row_[i] = true;
+					column_[j] = true;
+				}
+			}
+		}
+
+	/**
+	 * 行列を置換 (補助メソッド)
+	 * @param[in,out]	matrix	行列
+	 * @note	事前にメソッド @a prepare を実施しておくこと。
+	 * @note	最悪計算量は O(mn)。ただし m, n はそれぞれ引数 @a の高さと幅。
+	 */
+	void
+	replace(TYPE matrix[H][W]) const
+		{
+			assert(matrix);
+
+			for (size_t i(0); i < H; ++i) {
+				if (!row_[i]) continue;
+				for (size_t j(0); j < W; ++j) {
+					matrix[i][j] = 0;
+				}
+			}
+
+			for (size_t j(0); j < W; ++j) {
+				if (!column_[j]) continue;
+				for (size_t i(0); i < H; ++i) {
+					matrix[i][j] = 0;
+				}
+			}
+		}
 
 public:
 
 	/**
-	 * 行列において0が出現した行・列を全て0に置換
-	 * @param[in]	matrix	置換対象の行列
-	 * @note	最悪計算量はO(HW)になる。
+	 * 行列を置換
+	 * @param[in,out]	matrix	行列
+	 * @note	計算量は O(mn)。ただし m, n はそれぞれ引数 @a の高さと幅。
 	 */
 	void
 	execute(TYPE matrix[H][W])
 		{
-			std::memset((void*)line_, 0, sizeof(line_));
-			std::memset((void*)column_, 0, sizeof(column_));
+			assert(matrix);
 
-			size_t count_l(0);
-			size_t count_c(0);
-
-			for (size_t i(0); i < H; ++i) {
-				for (size_t j(0); j < W; ++j) {
-					if ((TYPE)0 != matrix[i][j]) continue;
-					if (!line_[i]) {
-						line_[i] = true;
-						++count_l;
-						if (H <= count_l) break;
-					}
-					if (!column_[j]) {
-						column_[j] = true;
-						++count_c;
-						if (W <= count_c) break;
-					}
-				}
-			}
-
-			////////////////////////////////////////////////////////////
-			// ここで「H <= count_l && W <= count_c」が
-			// 常に「false」になることに注意。
-
-			if (count_c < W) {
-				for (size_t i(0); i < H; ++i) {
-					if (!line_[i]) continue;
-					for (size_t j(0); j < W; ++j) {
-						matrix[i][j] = (TYPE)0;
-					}
-				}
-			}
-
-			if (count_l < H) {
-				for (size_t j(0); j < W; ++j) {
-					if (!column_[j]) continue;
-					for (size_t i(0); i < H; ++i) {
-						matrix[i][j] = (TYPE)0;
-					}
-				}
-			}
+			prepare(matrix);
+			replace(matrix);
 		}
 };
-
-/**
- * 行列を表示
- */
-template<size_t H, size_t W>
-void
-print_matrix(int matrix[H][W])
-{
-	for (size_t i(0); i < H; ++i) {
-		for (size_t j(0); j < W; ++j) {
-			std::printf("%d ", matrix[i][j]);
-		}
-		std::printf("\n");
-	}
-}
 
 /**
  * 動作確認用コマンド
