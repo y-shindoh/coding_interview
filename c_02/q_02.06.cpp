@@ -37,7 +37,9 @@ FindConnect(const Node<TYPE>* node)
 
 	do {
 		fast = fast->get_next();
+		assert(fast);	// ERROR: found the tail
 		fast = fast->get_next();
+		assert(fast);	// ERROR: found the tail
 		slow = slow->get_next();
 	} while (fast != slow);
 
