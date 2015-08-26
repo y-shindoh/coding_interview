@@ -25,6 +25,7 @@
  * 循環する連結リストの連結箇所であるノードを探索
  * @param[in]	node	連結リストの先頭のノード
  * @return	連結箇所であるノード
+ * @note	計算量は O(n)。ただし n は引数 @a node のノード数。
  */
 template<typename TYPE>
 const Node<TYPE>*
