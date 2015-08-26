@@ -9,108 +9,116 @@
 #ifndef	__LIST_HPP__
 #define	__LIST_HPP__ "list.hpp"
 
-//#define	USE_DOUBLY_LINKED_LIST	"use doubly linked list."
-
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
 
+//#define	USE_DOUBLY_LINKED_LIST	"use_doubly_linked_list"
+
 /**
- * @class	リストのノード
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
+ * リストを構成するノード
  */
 template<typename TYPE>
 class Node
 {
 private:
 
-	TYPE key_;				///< ノードのキー
+	TYPE data_;				///< データ
 #ifdef	USE_DOUBLY_LINKED_LIST
-	Node<TYPE>* previous_;	///< 前のノード (前がなければ @a 0 )
+	Node<TYPE>* previous_;	///< 前のノード
 #endif	// USE_DOUBLY_LINKED_LIST
-	Node<TYPE>* next_;		///< 次のノード (次がなければ @a 0 )
+	Node<TYPE>* next_;		///< 次のノード
 
 public:
 
 #ifdef	USE_DOUBLY_LINKED_LIST
+
 	/**
 	 * コンストラクタ
-	 * @param[in]	key	ノードのキー
+	 * @param[in]	data	格納するデータ
+	 * @param[in]	previous	前のノード
+	 * @param[in]	next	次のノード
 	 */
-	Node(const TYPE& key,
+	Node(const TYPE& data,
 		 Node<TYPE>* previous = 0,
 		 Node<TYPE>* next = 0)
-		: key_(key), previous_(previous), next_(next)
+		: data_(data), previous_(previous), next_(next)
 		{
 			;
 		}
+
 #else	// USE_DOUBLY_LINKED_LIST
+
 	/**
 	 * コンストラクタ
-	 * @param[in]	key	ノードのキー
+	 * @param[in]	data	格納するデータ
+	 * @param[in]	next	次のノード
 	 */
-	Node(const TYPE& key,
+	Node(const TYPE& data,
 		 Node<TYPE>* next = 0)
-		: key_(key), next_(next)
+		: data_(data), next_(next)
 		{
 			;
 		}
+
 #endif	// USE_DOUBLY_LINKED_LIST
 
 	/**
-	 * キーの設定
-	 * @param[in]	ノードのキー
+	 * データを格納
+	 * @param[in]	data	データ
 	 */
 	void
-	set_key(const TYPE& key)
+	set_data(const TYPE& data)
 		{
-			key_ = key;
+			data_ = data;
 		}
 
 	/**
-	 * キーの取得
-	 * @return	ノードのキー
+	 * データを取得
+	 * @return	データ
 	 */
 	TYPE
-	get_key() const
+	get_data() const
 		{
-			return key_;
+			return data_;
 		}
 
 #ifdef	USE_DOUBLY_LINKED_LIST
+
 	/**
-	 * 前のノードの設定
-	 * @param[in]	前のノード
+	 * 前のノードを格納
+	 * @param[in]	previous	前のノードのポインタ
 	 */
 	void
-	set_previous(Node<TYPE>* node)
+	set_previous(Node<TYPE>* previous)
 		{
-			previous_ = node;
+			previous_ = previous;
 		}
 
 	/**
-	 * 前のノードの取得
-	 * @return	前のノード
+	 * 前のノードを取得
+	 * @return	前のノードのポインタ
 	 */
 	Node<TYPE>*
 	get_previous() const
 		{
 			return previous_;
 		}
+
 #endif	// USE_DOUBLY_LINKED_LIST
 
 	/**
-	 * 次のノードの設定
-	 * @param[in]	次のノード
+	 * 次のノードを格納
+	 * @param[in]	next	次のノード
 	 */
 	void
-	set_next(Node<TYPE>* node)
+	set_next(Node<TYPE>* next)
 		{
-			next_ = node;
+			next_ = next;
 		}
 
 	/**
-	 * 次のノードの取得
+	 * 次のノードを取得
 	 * @return	次のノード
 	 */
 	Node<TYPE>*
@@ -120,112 +128,64 @@ public:
 		}
 
 	/**
-	 * リストを生成
-	 * @param[in]	keys	リストに含める値の配列
-	 * @param[in]	length	引数 @a keys の長さ
-	 * @return	生成したリストの先頭ノード
-	 * @note	計算量はΘ(n)。ただしnは配列の長さ。
+	 * 配列からリストを生成
+	 * @param[in]	array	配列
+	 * @param[in]	length	引数 @a array の要素数
+	 * @return	リストの先頭のノード
 	 */
 	static Node<TYPE>*
-	MakeList(const TYPE* keys,
-			 size_t length)
+	MakeLinkedList(const TYPE* array,
+				   size_t length)
 		{
-			assert(keys);
-
-			Node<TYPE>* head(0);
-			Node<TYPE>* previous(0);
-			Node<TYPE>* current;
+			Node<TYPE>* top(0);
+			Node<TYPE>* c;
+			Node<TYPE>* p(0);
 
 			for (size_t i(0); i < length; ++i) {
-				current = new Node<TYPE>(keys[i]);
-				if (previous) {
+				c = new Node<TYPE>(array[i]);
 #ifdef	USE_DOUBLY_LINKED_LIST
-					current->set_previous(previous);
+				c->set_previous(p);
 #endif	// USE_DOUBLY_LINKED_LIST
-					previous->set_next(current);
-				}
-				if (!head) head = current;
-				previous = current;
+				if (p) p->set_next(c);
+				if (!top) top = c;
+				p = c;
 			}
 
-			return head;
+			return top;
 		}
 
 	/**
 	 * リストを削除
-	 * @param[in]	head	リストの先頭ノード
-	 * @note	計算量はΘ(n)。ただしnはリストの長さ。
+	 * @param[in,out]	node	リストの先頭ノード
 	 */
 	static void
-	DeleteList(Node<TYPE>* head)
+	DeleteLinkedList(Node<TYPE>* node)
 		{
-			Node<TYPE>* current(head);
-			Node<TYPE>* next;
+			Node<TYPE>* n;
 
-			while (current) {
-				next = current->get_next();
-				delete current;
-				current = next;
+			while (node) {
+				n = node->get_next();
+				delete node;
+				node = n;
 			}
 		}
 
 	/**
-	 * リストの末尾ノードを取得
-	 * @param[in]	head	リストの先頭ノード
-	 * @return	リストの末尾ノード
-	 * @note	計算量はΘ(n)。ただしnはリストの長さ。
-	 */
-	static Node<TYPE>*
-	GetEndNode(Node<TYPE>* node)
-		{
-			assert(node);
-
-			while (node->get_next()) {
-				node = node->get_next();
-			}
-
-			return node;
-		}
-
-	/**
-	 * リストの末尾ノードを取得
-	 * @param[in]	head	リストの先頭ノード
-	 * @return	リストの末尾ノード
-	 * @note	計算量はΘ(n)。ただしnはリストの長さ。
-	 */
-	static const Node<TYPE>*
-	GetEndNode(const Node<TYPE>* node)
-		{
-			assert(node);
-
-			while (node->get_next()) {
-				node = node->get_next();
-			}
-
-			return node;
-		}
-
-	/**
-	 * リスト (ノード列) を出力
-	 * @param[out]	file	出力
+	 * リストの各ノードのデータを表示
 	 * @param[in]	node	リストの先頭ノード
 	 */
 	static void
-	Print(FILE* file,
-		  const Node<TYPE>* node)
+	PrintLinkedList(const Node<TYPE>* node)
 		{
-			bool first(true);
-
-			std::fprintf(file, "[");
+			bool flag = false;
 
 			while (node) {
-				if (!first) std::fprintf(file, "->");
-				std::fprintf(file, "%G", (double)node->get_key());
+				if (flag) std::printf(", ");
+				std::printf("%G", (double)node->get_data());
 				node = node->get_next();
-				first = false;
+				flag = true;
 			}
-
-			std::fprintf(file, "]\n");
+			if (flag) std::printf("\n");
 		}
 };
 
