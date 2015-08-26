@@ -6,72 +6,49 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  循環する連結リストが与えられたとき、
+  循環する部分の最初のノードを返すアルゴリズムを実装してください。
+
+  循環を含む連結リストの定義:
+  連結リストAではループを作るために、
+  リスト内のノードの次へのポインタが以前に出現したノードを指している。
+ */
+
 #include <cstddef>
 #include <cstdio>
-#include <set>
 #include <cassert>
 #include "list.hpp"
 
 /**
- * リストからループの最初のノードを抽出
- * @param[in]	node	処理対象のリスト
- * @return	ループの最初のノード
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	ループが見つからない場合は @a 0 が返却される。
- * @note	計算量はO(n)となる。
- * @note	確実に正解を出す回答。本来の回答とは違う。
+ * 循環する連結リストの連結箇所であるノードを探索
+ * @param[in]	node	連結リストの先頭のノード
+ * @return	連結箇所であるノード
  */
 template<typename TYPE>
 const Node<TYPE>*
-FindLoop1(const Node<TYPE>* node)
-{
-	assert(node);
-
-	std::set<const Node<TYPE>*> nodes;
-
-	while (node) {
-		if (nodes.find(node) != nodes.end()) return node;
-		nodes.insert(node);
-		node = node->get_next();
-	}
-
-	return 0;
-}
-
-/**
- * リストからループの最初のノードを抽出
- * @param[in]	node	処理対象のリスト
- * @return	ループの最初のノード
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	ループが見つからない場合は @a 0 が返却される。
- * @note	計算量はO(n)となる。
- * @note	本来の回答はこちら。
- */
-template<typename TYPE>
-const Node<TYPE>*
-FindLoop2(const Node<TYPE>* node)
+FindConnect(const Node<TYPE>* node)
 {
 	assert(node);
 
 	const Node<TYPE>* fast(node);
 	const Node<TYPE>* slow(node);
 
-	while ('-') {
+	do {
 		fast = fast->get_next();
-		if (!fast) return 0;
 		fast = fast->get_next();
-		if (!fast) return 0;
 		slow = slow->get_next();
-		if (fast == slow) break;
-	}
+	} while (fast != slow);
 
-	slow = node;
+	fast = node;
 
-	while ('-') {
-		if (fast == slow) return fast;
+	while (fast != slow) {
 		fast = fast->get_next();
 		slow = slow->get_next();
 	}
+
+	return fast;
 }
 
 /**
@@ -79,36 +56,31 @@ FindLoop2(const Node<TYPE>* node)
  */
 int main()
 {
-	const int data[] = {1, 3, 5, 7, 9, 0, 2, 4, 6, 8};
-	Node<int>* const list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
-	Node<int>* const tail = Node<int>::GetEndNode(list);
-	Node<int>* node(list);
-	const Node<int>* loop;
+	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
 
-	Node<int>::Print(stdout, list);
+	Node<int>* list = Node<int>::MakeLinkedList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>::PrintLinkedList(list);
 
-	for (size_t i(0); i < 4; ++i) {
-		node = node->get_next();
+	Node<int>* connect(list);
+	for (size_t i(0); i < 7; ++i) {
+		connect = connect->get_next();
 	}
-	std::printf("CONNECT: %d\n", node->get_key());
-
-	// ループを作る
-	tail->set_next(node);
-
-	loop = FindLoop1<int>(list);
-	if (loop) {
-		std::printf("FOUND: %d\n", loop->get_key());
+	Node<int>* end(connect);
+	while (end->get_next()) {
+		end = end->get_next();
 	}
+	end->set_next(connect);
+	const Node<int>* node = FindConnect<int>(list);
 
-	loop = FindLoop2<int>(list);
-	if (loop) {
-		std::printf("FOUND: %d\n", loop->get_key());
+	if (node == connect) {
+		std::printf("SUCCEED: %d\n", node->get_data());
+	}
+	else {
+		std::printf("FAILED: %d, %d\n", connect->get_data(), node->get_data());
 	}
 
-	// ループを切る
-	tail->set_next(0);
-
-	Node<int>::DeleteList(list);
+	end->set_next(0);
+	Node<int>::DeleteLinkedList(list);
 
 	return 0;
 }
