@@ -6,29 +6,33 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  単方向連結リストにおいて、中央の要素のみアクセス可能であるとします。
+  その要素を削除するアルゴリズムを実装してください。
+ */
+
 #include <cstddef>
-#include <cstdio>
 #include <cassert>
 #include "list.hpp"
 
 /**
- * リストの要素を削除
- * @param[in]	node	削除対象の要素 (リストの先頭と末尾を除く)
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	計算量はO(1)となる。
+ * 末尾以外のノードをリストから削除
+ * @param[in,out]	node	削除対象のノード
+ * @note	実際に削除されるのは、引数 @a node の次のノード。
+ * @note	計算量は O(1)。
  */
 template<typename TYPE>
 void
-DeleteCenterNode(Node<TYPE>* node)
+DeleteNotTailNode(Node<TYPE>* node)
 {
 	assert(node);
+	assert(node->get_next());
 
 	Node<TYPE>* next = node->get_next();
 
-	assert(next);
-
-	node->set_key(next->get_key());
 	node->set_next(next->get_next());
+	node->set_data(next->get_data());
 
 	delete next;
 }
@@ -39,13 +43,18 @@ DeleteCenterNode(Node<TYPE>* node)
 int main()
 {
 	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
-	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
 
-	Node<int>::Print(stdout, list);
-	DeleteCenterNode<int>(list->get_next()->get_next());
-	Node<int>::Print(stdout, list);
+	Node<int>* list = Node<int>::MakeLinkedList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>::PrintLinkedList(list);
 
-	Node<int>::DeleteList(list);
+	Node<int>* node(list);
+	for (size_t i(0); i < 5; ++i) {
+		node = node->get_next();
+	}
+	DeleteNotTailNode<int>(node);
+	Node<int>::PrintLinkedList(list);
+
+	Node<int>::DeleteLinkedList(list);
 
 	return 0;
 }
