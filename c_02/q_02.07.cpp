@@ -6,79 +6,56 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  連結リストが回文
+  (先頭から巡回しても末尾から巡回しても、各ノードの要素がまったく同じになっている)
+  かどうかを調べる関数を実装してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
-#define	USE_DOUBLY_LINKED_LIST	1	// 双方向リストを使う
 #include "list.hpp"
 
 /**
- * 回文チェッカー (双方向リストを利用)
- * @param[in]	head	処理対象のリスト
- * @return	true: 回文, false: 回文でない
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	ループが見つからない場合は @a 0 が返却される。
- * @note	計算量はO(n)となる。
+ * 単方向リストが回文か否かを確認
+ * @param[in]	node	単方向リスト
+ * @return	true: 回文, false: 回文ではない
+ * @note	計算量は O(n)。ただし n は引数 @a node のノード数。
+ * @note	双方向リストなら、先頭から正順に・末尾から逆順にたどりつつ値を比較すれば良い。
+ * @note	他のデータ構造を使った方が効率が良いが、ここでは単方向リストのみ用いた。
  */
 template<typename TYPE>
 bool
-CheckPalindrome1(const Node<TYPE>* head)
+IsPalindrome(const Node<TYPE>* node)
 {
-	assert(head);
+	assert(node);
 
-	const Node<TYPE>* tail = Node<int>::GetEndNode(head);
+	Node<TYPE>* competitor(0);
+	const Node<TYPE>* n(node);
 
-	while ('-') {
-		if (head == tail) break;				// 長さが奇数
-		if (head->get_next() == tail) break;	// 長さが偶数
-		if (head->get_key() != tail->get_key()) return false;
-		head = head->get_next();
-		tail = tail->get_previous();
+	while (n) {
+		competitor = new Node<TYPE>(n->get_data(), competitor);
+		n = n->get_next();
 	}
 
-	return true;
-}
-
-/**
- * 回文チェッカー (単方向リストを利用)
- * @param[in]	head	処理対象のリスト
- * @return	true: 回文, false: 回文でない
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	ループが見つからない場合は @a 0 が返却される。
- * @note	計算量はO(n)となる。ノード生成するので少し効率が悪い。
- */
-template<typename TYPE>
-bool
-CheckPalindrome2(const Node<TYPE>* head)
-{
-	assert(head);
-
-	const Node<TYPE>* fast(head);
-	const Node<TYPE>* slow(head);
-	Node<TYPE>* reverse(0);	// スタックで表現しても良い
-
-	while (fast) {	// リスト長が偶数
-		fast = fast->get_next();
-		if (!fast) {
-			slow = slow->get_next();
-			break;	// リスト長が奇数
+	bool flag(true);
+	n = competitor;
+	while (node) {
+		if (node->get_data() != n->get_data()) {
+			flag = false;
+			break;
 		}
-		fast = fast->get_next();
-		reverse = new Node<TYPE>(slow->get_key(), 0, reverse);	// 単方向リスト扱い
-		slow = slow->get_next();
+		else {
+			node = node->get_next();
+			n = n->get_next();
+		}
 	}
 
-	Node<TYPE>* node(reverse);
+	Node<TYPE>::DeleteLinkedList(competitor);
 
-	while (slow && node) {
-		if (slow->get_key() != node->get_key()) break;
-		slow = slow->get_next();
-		node = node->get_next();
-	}
-
-	Node<TYPE>::DeleteList(reverse);
-
-	return !node;
+	return flag;
 }
 
 /**
@@ -86,29 +63,20 @@ CheckPalindrome2(const Node<TYPE>* head)
  */
 int main()
 {
-	const int data[][9] = {{1, 3, 5, 7, 9, 2, 4, 6, 8},
-						   {1, 2, 4, 8, 16, 8, 4, 2, 1}};
+	int data[][11] = {{1, 3, 5, 7, 9, 0, 2, 4, 4, 6, 8},
+					  {1, 3, 5, 2, 4, 6, 4, 2, 5, 3, 1}};
+	Node<int>* list;
 
-	for (size_t i(0); i < sizeof(data)/sizeof(data[0]); ++i) {
-		Node<int>* list = Node<int>::MakeList(data[i], sizeof(data[0])/sizeof(data[0][0]));
-
-		Node<int>::Print(stdout, list);
-
-		if (CheckPalindrome1<int>(list)) {
-			std::printf("palindrome.\n");
+	for (size_t i(0); i < sizeof(data) / sizeof(data[0]); ++i) {
+		list = Node<int>::MakeLinkedList(data[i], sizeof(data[0]) / sizeof(data[0][0]));
+		if (IsPalindrome<int>(list)) {
+			std::printf("PALINDROME: ");
 		}
 		else {
-			std::printf("not palindrome.\n");
+			std::printf("NOT PALINDROME: ");
 		}
-
-		if (CheckPalindrome2<int>(list)) {
-			std::printf("palindrome.\n");
-		}
-		else {
-			std::printf("not palindrome.\n");
-		}
-
-		Node<int>::DeleteList(list);
+		Node<int>::PrintLinkedList(list);
+		Node<int>::DeleteLinkedList(list);
 	}
 
 	return 0;
