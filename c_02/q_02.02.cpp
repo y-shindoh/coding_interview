@@ -6,38 +6,46 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  単方向連結リストにおいて、
+  末尾から数えてk番目の要素を見つけるアルゴリズムを実装してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
-#include <cassert>
 #include "list.hpp"
 
 /**
- * リストの末尾からn番目の要素を取得
- * @param[in]	head	リストの先頭ノード
- * @param[in]	n	指定する位置 (1以上)
- * @return	リストの末尾からn番目の要素
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	取得失敗時は @a 0 が返却される。
- * @note	計算量はO(n)となる。ただしこのnはリストの長さとする。
+ * 連結リストの末尾からk番目のノードを取得
+ * @param[in]	node	連結リストの先頭ノード
+ * @param[in]	k	位置
+ * @return	末尾からk番目のノード (存在しない場合は @a 0 が返却される)
+ * @note	末尾のノードを0番目として数える。
+ * @note	計算量は O(n)。ただし n は引数 @a node のノード数。
  */
 template<typename TYPE>
 const Node<TYPE>*
-GetTailNode(const Node<TYPE>* node,
-			size_t n = 1)
+FindLastNthNode(const Node<TYPE>* node,
+				size_t n)
 {
-	const Node<TYPE>* follow(node);
+	const Node<TYPE>* right(node);
+	const Node<TYPE>* left(0);
 
 	for (size_t i(0); i < n; ++i) {
-		if (!node) return 0;
-		node = node->get_next();
+		if (!right) break;
+		right = right->get_next();
 	}
 
-	while (node) {
-		node = node->get_next();
-		follow = follow->get_next();
+	if (right) {
+		left = node;
+		while (right->get_next()) {
+			right = right->get_next();
+			left = left->get_next();
+		}
 	}
 
-	return follow;
+	return left;
 }
 
 /**
@@ -46,18 +54,21 @@ GetTailNode(const Node<TYPE>* node,
 int main()
 {
 	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
-	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
-	const Node<int>* node;
+	size_t k(5);
+//	size_t k(32);
 
-	Node<int>::Print(stdout, list);
-	for (size_t i(1); i < sizeof(data)/sizeof(data[0]); i += 3) {
-		node = GetTailNode<int>(list, i);
-		if (node) {
-			std::printf("[%lu]\t%d\n", i, node->get_key());
-		}
+	Node<int>* list = Node<int>::MakeLinkedList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>::PrintLinkedList(list);
+
+	const Node<int>* node = FindLastNthNode<int>(list, k);
+	if (node) {
+		std::printf("=> %d (%lu)\n", node->get_data(), k);
+	}
+	else {
+		std::printf("=> not found (%lu)\n", k);
 	}
 
-	Node<int>::DeleteList(list);
+	Node<int>::DeleteLinkedList(list);
 
 	return 0;
 }
