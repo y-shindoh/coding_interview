@@ -34,15 +34,18 @@ IsPalindrome(const Node<TYPE>* node)
 
 	Node<TYPE>* competitor(0);
 	const Node<TYPE>* n(node);
+	size_t l(0);
 
 	while (n) {
 		competitor = new Node<TYPE>(n->get_data(), competitor);
 		n = n->get_next();
+		++l;
 	}
 
 	bool flag(true);
 	n = competitor;
-	while (node) {
+	l /= 2;
+	for (size_t i(0); i < l; ++i) {
 		if (node->get_data() != n->get_data()) {
 			flag = false;
 			break;
@@ -63,8 +66,8 @@ IsPalindrome(const Node<TYPE>* node)
  */
 int main()
 {
-	int data[][11] = {{1, 3, 5, 7, 9, 0, 2, 4, 4, 6, 8},
-					  {1, 3, 5, 2, 4, 6, 4, 2, 5, 3, 1}};
+	int data[][12] = {{1, 3, 5, 7, 9, 0, 0, 2, 4, 4, 6, 8},
+					  {1, 3, 5, 2, 4, 6, 6, 4, 2, 5, 3, 1}};
 	Node<int>* list;
 
 	for (size_t i(0); i < sizeof(data) / sizeof(data[0]); ++i) {
