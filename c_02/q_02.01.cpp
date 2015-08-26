@@ -6,72 +6,81 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  ソートされていない連結リストから、重複する要素を削除するコードを書いてください。
+
+  発展問題:
+  もし、一時的なバッファが使用できないとすれば、どうやってこの問題を解きますか?
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <set>
 #include "list.hpp"
 
 /**
- * リスト中の重複するキーのノードを削除
- * @param[in]	head	リストの先頭ノード
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	最悪計算量はO(n^2)となる。
+ * 単方向リストから重複する要素を削除 (作業領域を使用)
+ * @param[in,out]	node	単方向リストの先頭ノード
+ * @param[out]	buffer	作業領域
+ * @note	最悪計算量は O(n log n)。ただし n は引数 @a node のノード数。
  */
 template<typename TYPE>
 void
-DeleteDuplicatedKeySlowly(Node<TYPE>* head)
+DeleteDuplicatedNode(Node<TYPE>* node,
+					 std::set<TYPE>& buffer)
 {
-	Node<TYPE>* current;
-	Node<TYPE>* previous;
-	Node<TYPE>* target;
-	TYPE key;
+	Node<TYPE>* previous(0);
+	Node<TYPE>* next;
+	TYPE data;
 
-	while (head) {
-		key = head->get_key();
-		current = head->get_next();
-		previous = head;
+	buffer.clear();
 
-		while (current) {
-			target = 0;
-			if (key == current->get_key()) target = current;
-			if (!target) previous = current;
-			current = current->get_next();
-			if (target) {
-				previous->set_next(current);
-				delete target;
-			}
+	while (node) {
+		next = node->get_next();
+		data = node->get_data();
+		if (buffer.find(data) == buffer.end()) {
+			buffer.insert(data);
+			previous = node;
 		}
-
-		head = head->get_next();
+		else {
+			if (previous) previous->set_next(next);
+			delete node;
+		}
+		node = next;
 	}
 }
 
 /**
- * リスト中の重複するキーのノードを削除
- * @param[in]	head	リストの先頭ノード
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	最悪計算量はO(n log n)となる。
+ * 単方向リストから重複する要素を削除 (作業領域を使わない)
+ * @param[in,out]	node	単方向リストの先頭ノード
+ * @note	最悪計算量は O(n^2)。ただし n は引数 @a node の要素数。
  */
 template<typename TYPE>
 void
-DeleteDuplicatedKeyFast(Node<TYPE>* node)
+DeleteDuplicatedNode(Node<TYPE>* node)
 {
-	Node<TYPE>* previous(0);
-	TYPE key;
-	std::set<TYPE> used_keys;
+	TYPE data;
+	Node<TYPE>* p;	// 処理対象直前に残っているノード
+	Node<TYPE>* c;	// 処理対象のノード
+	Node<TYPE>* n;	// 次の処理対象のノード
 
 	while (node) {
-		key = node->get_key();
-		if (used_keys.find(key) == used_keys.end()) {
-			used_keys.insert(key);
-			previous = node;
-			node = node->get_next();
+		data = node->get_data();
+		p = node;
+		c = node->get_next();
+		while (c) {
+			n = c->get_next();
+			if (data == c->get_data()) {
+				p->set_next(n);
+				delete c;
+			}
+			else {
+				p = c;
+			}
+			c = n;
 		}
-		else {
-			previous->set_next(node->get_next());
-			delete node;
-			node = previous->get_next();
-		}
+		node = node->get_next();
 	}
 }
 
@@ -81,18 +90,21 @@ DeleteDuplicatedKeyFast(Node<TYPE>* node)
 int main()
 {
 	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
+	std::set<int> buffer;
 
-	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
-	Node<int>::Print(stdout, list);
-	DeleteDuplicatedKeySlowly<int>(list);
-	Node<int>::Print(stdout, list);
-	Node<int>::DeleteList(list);
+	Node<int>* list = Node<int>::MakeLinkedList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>::PrintLinkedList(list);
+	DeleteDuplicatedNode<int>(list, buffer);
+	std::printf("=> ");
+	Node<int>::PrintLinkedList(list);
+	Node<int>::DeleteLinkedList(list);
 
-	list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
-	Node<int>::Print(stdout, list);
-	DeleteDuplicatedKeyFast<int>(list);
-	Node<int>::Print(stdout, list);
-	Node<int>::DeleteList(list);
+	list = Node<int>::MakeLinkedList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>::PrintLinkedList(list);
+	DeleteDuplicatedNode<int>(list);
+	std::printf("=> ");
+	Node<int>::PrintLinkedList(list);
+	Node<int>::DeleteLinkedList(list);
 
 	return 0;
 }
