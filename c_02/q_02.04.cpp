@@ -6,62 +6,58 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  ある数xが与えられたとき、連結リストの要素を並び替え、
+  xより小さいものが前にくるようにするコードを書いてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
-#include <cassert>
 #include "list.hpp"
 
 /**
- * リストを並び替え (引数 @a key より小さいものを前方に、それ以外を後方に置く)
- * @param[in]	node	削除対象の要素 (リストの先頭と末尾を除く)
- * @param[in]	key	並び替えの条件
- * @return	並び替えたリスト
- * @note	テンプレートの型 @a TYPE はリストのキーの型。
- * @note	計算量はO(n)となる。
+ * 単方向リストで指定値未満のノードを前方に移動
+ * @param[in,out]	node	単方向リストの先頭ノード
+ * @param[in]	data	指定値
+ * @return	処理後の単方向リストの先頭ノード
+ * @	計算量は O(n)。ただし n は引数 @a node のノード数。
  */
 template<typename TYPE>
 Node<TYPE>*
-RestructureList(Node<TYPE>* node,
-				const TYPE& key)
+Relocate(Node<TYPE>* node,
+		 const TYPE& data)
 {
-	assert(node);
-
-	Node<TYPE>* first(0);
-	Node<TYPE>* second(0);
-	Node<TYPE>* last_f(0);
-	Node<TYPE>* last_s(0);
+	Node<TYPE>* result(0);
+	Node<TYPE>* tail(0);
+	Node<TYPE>* remain(0);
+	Node<TYPE>* previous(0);
+	Node<TYPE>* next;
 
 	while (node) {
-		if (node->get_key() < key) {
-			if (!first) {
-				first = node;
-				last_f = node;
-			}
-			else {
-				last_f->set_next(node);
-				last_f = node;
-			}
+		next = node->get_next();
+		if (data <= node->get_data()) {
+			previous = node;
+			if (!remain) remain = node;
 		}
 		else {
-			if (!second) {
-				second = node;
-				last_s = node;
+			if (previous) {
+				previous->set_next(next);
 			}
-			else {
-				last_s->set_next(node);
-				last_s = node;
-			}
+			node->set_next(0);
+			if (!result) result = node;
+			if (tail) tail->set_next(node);
+			tail = node;
 		}
-		node = node->get_next();
+		node = next;
 	}
 
-	if (first) {
-		last_f->set_next(second);
-		if (last_s) last_s->set_next(0);
-		return first;
+	if (result) {
+		tail->set_next(remain);
+		return result;
 	}
 	else {
-		return second;
+		return remain;
 	}
 }
 
@@ -71,18 +67,16 @@ RestructureList(Node<TYPE>* node,
 int main()
 {
 	int data[] = {1, 3, 5, 7, 9, 5, 0, 2, 4, 4, 6, 8, 1};
-	int devisor[] = {5, 3, 0, 10};
-	Node<int>* list = Node<int>::MakeList(data, sizeof(data)/sizeof(data[0]));
+	int k(5);
 
-	Node<int>::Print(stdout, list);
+	Node<int>* list = Node<int>::MakeLinkedList(data, sizeof(data)/sizeof(data[0]));
+	Node<int>::PrintLinkedList(list);
 
-	for (size_t i(0); i < sizeof(devisor)/sizeof(devisor[0]); ++i) {
-		std::printf("devisor: %d\n", devisor[i]);
-		list = RestructureList<int>(list, devisor[i]);
-		Node<int>::Print(stdout, list);
-	}
+	list = Relocate<int>(list, k);
+	std::printf("%d => ", k);
+	Node<int>::PrintLinkedList(list);
 
-	Node<int>::DeleteList(list);
+	Node<int>::DeleteLinkedList(list);
 
 	return 0;
 }
