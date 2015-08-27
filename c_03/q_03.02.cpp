@@ -6,6 +6,13 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  push と pop に加えて、最小の要素を返す関数 min を持つスタックを
+  どのようにデザインしますか?
+  ただし push, pop, min 関数はすべて O(1) の実行時間になるようにしてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
@@ -14,38 +21,22 @@
 /**
  * @class	最小値を最悪計算量Θ(1)で出力できるスタック
  * @note	テンプレートの型 @a TYPE はスタックのキーの型。
+ * @note	各メソッドの計算量は、実際には std::vector に依存している。
  */
 template<typename TYPE>
 class MinimumStack
 {
 private:
 
-	std::vector<TYPE> data_;	///< 本来のスタック
-	std::vector<TYPE> minimum_;	///< 最小値のスタック
+	std::vector<TYPE> data_;	///< データのスタック
+	std::vector<size_t> index_;	///< 最小値を指すインデックス
 
 public:
 
 	/**
-	 * コンストラクタ
-	 */
-	MinimumStack()
-		{
-			;
-		}
-
-	/**
-	 * デストラクタ
-	 */
-	virtual
-	~MinimumStack()
-		{
-			;
-		}
-
-	/**
-	 * スタックが空か確認
-	 * @return	true: 空, false: 空でない
-	 * @note	最悪計算量はO(1)。
+	 * スタックが空かどうかを確認
+	 * @return	true: 空, false: 空ではない
+	 * @note	計算量は O(1)。
 	 */
 	bool
 	empty() const
@@ -54,21 +45,9 @@ public:
 		}
 
 	/**
-	 * スタックの要素数を取得
-	 * @return	スタックの要素数
-	 * @note	最悪計算量はO(1)。
-	 */
-	size_t
-	size() const
-		{
-			return data_.size();
-		}
-
-	/**
-	 * スタックの値を取得
-	 * @return	最後にスタックに追加した値を取得
-	 * @note	事前にスタックが空でないことを確認しておくこと。
-	 * @note	最悪計算量はO(1)。
+	 * スタックの先頭要素を参照
+	 * @return	先頭要素
+	 * @note	計算量は O(1)。
 	 */
 	TYPE
 	top() const
@@ -79,70 +58,81 @@ public:
 		}
 
 	/**
-	 * スタックの最小値を取得
-	 * @return	スタックの最小値
-	 * @note	事前にスタックが空でないことを確認しておくこと。
-	 * @note	最悪計算量はO(1)。
+	 * スタック中の最小値を参照
+	 * @return	最小値
+	 * @note	計算量は O(1)。
 	 */
 	TYPE
-	minimum() const
+	min() const
 		{
-			assert(!minimum_.empty());
+			assert(!index_.empty());
 
-			return minimum_.back();
+			size_t i = index_.back();
+			return data_[i];
 		}
 
 	/**
 	 * スタックに要素を追加
-	 * @param[in]	data	追加するデータ
-	 * @note	ならし解析の計算量はO(1)となる。最悪計算量はO(n)で、nはスタックの長さ。
+	 * @param[in]	data	追加対象の要素
+	 * @note	ならし計算量は O(1)。
 	 */
 	void
 	push(const TYPE& data)
 		{
-			data_.push_back(data);
-			if (minimum_.empty() || data <= minimum_.back()) {
-				minimum_.push_back(data);
+			if (index_.empty()) {
+				index_.push_back(0);
 			}
+			else {
+				size_t i = index_.back();
+				if (data < data_[i]) {
+					i = data_.size();
+					index_.push_back(i);
+				}
+			}
+
+			data_.push_back(data);
 		}
 
 	/**
-	 * スタックから要素を削除
-	 * @note	事前にスタックが空でないことを確認しておくこと。
-	 * @note	最悪計算量はO(1)。
+	 * スタックから先頭要素を除去
+	 * @note	計算量は O(1)。
 	 */
-	void
+	TYPE
 	pop()
 		{
 			assert(!data_.empty());
-			assert(!minimum_.empty());
+			assert(!index_.empty());
 
-			if (data_.back() <= minimum_.back()) {
-				minimum_.pop_back();
-			}
+			TYPE data = data_.back();
+
 			data_.pop_back();
+			if (data_.size() <= index_.back()) index_.pop_back();
+
+			return data;
 		}
 
 	/**
-	 * スタックの状態を出力
-	 * @param	file	出力先
+	 * スタックの内容を出力
+	 * @param[in,out]	file	出力先
 	 */
 	void
 	print(FILE* file) const
 		{
-			size_t l = data_.size();
+			assert(file);
+
+			if (data_.empty()) return;
+
 			std::fprintf(file, "[D] ");
-			for (size_t i(0); i < l; ++i) {
+			for (size_t i(0); i < data_.size(); ++i) {
 				if (0 < i) std::fprintf(file, ", ");
 				std::fprintf(file, "%G", (double)data_[i]);
 			}
 			std::fprintf(file, "\n");
 
-			l = minimum_.size();
-			std::fprintf(file, "[M] ");
-			for (size_t i(0); i < l; ++i) {
+			std::fprintf(file, "[I] ");
+			for (size_t i(0); i < index_.size(); ++i) {
 				if (0 < i) std::fprintf(file, ", ");
-				std::fprintf(file, "%G", (double)minimum_[i]);
+				std::fprintf(file, "%lu", index_[i]);
 			}
 			std::fprintf(file, "\n");
 		}
@@ -153,7 +143,7 @@ public:
  */
 int main()
 {
-	MinimumStack<int>* stack = new MinimumStack<int>();
+	MinimumStack<int>* stack = new MinimumStack<int>;
 
 	stack->push(2);
 	stack->push(3);
@@ -164,13 +154,15 @@ int main()
 
 	stack->print(stdout);
 
-	stack->pop();
-	stack->pop();
+	if (!stack->empty()) stack->pop();
+	if (!stack->empty()) stack->pop();
 
 	stack->print(stdout);
 
-	std::printf("last: %d\n", stack->top());
-	std::printf("min:  %d\n", stack->minimum());
+	if (!stack->empty())  {
+		std::printf("last: %d\n", stack->top());
+		std::printf("min:  %d\n", stack->min());
+	}
 
 	delete stack;
 
