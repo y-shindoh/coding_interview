@@ -92,7 +92,7 @@ public:
 	/**
 	 * ハノイの塔の問題を解決
 	 * @param[in]	n	おもりの数
-	 * @note	計算量は O(n)。ただし n はおもりの数。
+	 * @note	計算量は O(2^n)。ただし n はおもりの数。
 	 */
 	void
 	execute(int n)
