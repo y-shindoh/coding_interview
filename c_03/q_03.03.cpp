@@ -49,7 +49,7 @@ private:
 	void
 	adjust()
 		{
-			while (1 < stack_.size() && stack_.back()->empty()) {
+			while (!stack_.empty() && stack_.back()->empty()) {
 				buffer_.push_back(stack_.back());
 				stack_.pop_back();
 			}
@@ -63,8 +63,7 @@ public:
 	SetOfStacks()
 		: length_(0)
 		{
-			stack_.push_back(new SubStack);
-			stack_.back()->reserve(N);
+			;
 		}
 
 	/**
@@ -145,7 +144,7 @@ public:
 	void
 	push(const TYPE& data)
 		{
-			if (N <= stack_.back()->size()) {
+			if (stack_.empty() || N <= stack_.back()->size()) {
 				if (buffer_.empty()) {
 					stack_.push_back(new SubStack);
 					stack_.back()->reserve(N);
