@@ -6,10 +6,23 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  古典的なハノイの塔の問題では、
+  3つの塔とN枚のサイズの異なる円盤を用いて塔の間を移動させます。
+  最初は円盤が下から上に向かって小さくなるように
+  (どの円盤も自身より大きな円盤の上に乗っているように) なっています。
+  そして以下のような制約を持ちます。
+  (1) 一度に1枚の円盤しか動かせない。
+  (2) 塔の一番上にある円盤を他の塔に移動させる。
+  (3) 円盤を置くときは、それ自身より大きなものの上にしか置けない。
+  スタックを用いて、最初の塔に積み上がっている円盤を
+  最初の塔に移動させるプログラムを書いてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <vector>
-#include <string>
 
 /**
  * ハノイの塔の問題解決器
@@ -42,7 +55,7 @@ private:
 				return;
 			}
 
-			// fからwにn-1枚を移動 
+			// fからwにn-1枚を移動
 			execute(n - 1, f, d, w);
 
 			print();
@@ -53,7 +66,7 @@ private:
 			towers_[f].pop_back();
 			towers_[d].push_back(v);
 
-			// wからdにn-1枚を移動 
+			// wからdにn-1枚を移動
 			execute(n - 1, w, f, d);
 		}
 
@@ -111,7 +124,7 @@ int main(void)
 {
 	HanoiSolver solver;
 
-	solver.execute(8);
+	solver.execute(4);
 
-    return 0;
+	return 0;
 }
