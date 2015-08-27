@@ -6,6 +6,12 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  1つの配列を使って3つのスタックを実装するにはどのようにすればよいのか
+  述べてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -13,134 +19,116 @@
 #include <vector>
 
 /**
- * @class	1つの配列で複数のスタックを実現
- * @note	テンプレートの型 @a TYPE はスタックのキーの型。
- * @note	メモリ空間の利用効率は悪いが、可変長であっても実装が簡単。
+ * 1つの配列で複数のスタックを実現したスタック
+ * @note	実装方法は複数あるが、
+			今回は全てのスタックが同等の要素数を扱う前提の実装を考えた。
+ * @note	実装を簡単にするため std::vector を用いた。このため冗長さがある。
  */
 template<typename TYPE, size_t N>
 class MultiStack
 {
 private:
 
-	std::vector<TYPE> stack_;	///< スタック本体
-	size_t length_[N];			///< 各スタックが保持するデータ数
-
-	////////////////////////////////////////////////////////////
-	// 本来配列で処理する箇所を手抜きして std::vector で代替。
-	// このため、不要なメモリ領域の初期化が発生することに注意。
+	std::vector<TYPE> stack_;	///< データ (問題の「1つの配列」に該当)
+	size_t length_[N];			///< 各スタックの要素数
 
 public:
 
 	/**
 	 * コンストラクタ
-	 * @param[in]	l	各スタックのメモリの広さの初期値 (自然数)
+	 * @param[in]	capability	配列の長さの初期値
 	 */
-	MultiStack(size_t l = 16)
+	MultiStack(size_t capability = 32 * N)
 		{
-			assert(0 < l);
+			assert(0 < capability);
 
-			stack_.resize(l * N);	// 手抜き (本来なら std::malloc<f>)
-			std::memset((void*)length_, 0, sizeof(length_));
+			stack_.resize(capability);
+			std::memset((void*)length_, 0, sizeof(size_t) * N);
 		}
 
 	/**
-	 * デストラクタ
+	 * 指定したスタックの要素数を取得
+	 * @param[in]	index	スタックのインデックス
+	 * @return	スタックの要素数
+	 * @note	計算量は O(1)。
 	 */
-	virtual
-	~MultiStack()
+	size_t
+	size(size_t index) const
 		{
-			;
+			assert(index < N);
+
+			return length_[index];
 		}
 
 	/**
-	 * 指定のスタックが空かどうか確認
-	 * @param[in]	i	スタックのインデックス
-	 * @return	true: 空, false: 空でない
-	 * @note	最悪計算量はO(1)。
-	 */
-	bool
-	empty(size_t i) const
-		{
-			assert(i < N);
-
-			return !length_[i];
-		}
-
-	/**
-	 * 指定のスタックからデータを取得 (削除はしない)
-	 * @param[in]	i	スタックのインデックス
-	 * @return	取得した要素
-	 * @note	事前にスタックが空でないことを確認しておくこと。
-	 * @note	最悪計算量はO(1)。
+	 * 指定したスタックの先頭要素を参照
+	 * @param[in]	index	スタックのインデックス
+	 * @return	スタックの先頭要素
+	 * @note	計算量は O(1)。
 	 */
 	TYPE
-	top(size_t i) const
+	top(size_t index) const
 		{
-			assert(i < N);
-			assert(0 < length_[i]);
+			assert(index < N);
 
-			const size_t j = (length_[i] - 1) * N + i;
-
-			return stack_[j];
+			size_t i = (length_[index] - 1) * N + index;
+			return stack_[i];
 		}
 
 	/**
-	 * 指定のスタックに要素を追加
-	 * @param[in]	i	スタックのインデックス
-	 * @param[in]	data	追加するデータ
-	 * @note	ならし解析の計算量はO(1)となる。最悪計算量はO(n)で、nは @a stack_ の長さ。
+	 * 指定したスタックに要素を追加
+	 * @param[in]	index	スタックのインデックス
+	 * @param[in]	data	追加する要素
+	 * @note	ならし計算量は O(1)。
 	 */
 	void
-	push(size_t i,
+	push(size_t index,
 		 const TYPE& data)
 		{
-			assert(i < N);
+			assert(index < N);
 
-			const size_t l = stack_.size();
-			size_t j = length_[i];
+			size_t l = (length_[index] + 1) * N;
+			if (stack_.size() < l) stack_.resize(l * 2);
 
-			if (l < (j + 1) * N) {
-				stack_.resize(l * 2);	// 手抜き (本来なら std::realloc<f>)
-			}
-
-			j *= N;
-			j += i;
-			stack_[j] = data;
-			length_[i]++;
+			size_t i = length_[index] * N + index;
+			stack_[i] = data;
+			length_[index]++;
 		}
 
 	/**
-	 * 指定のスタックから要素を取得・削除
-	 * @param[in]	i	スタックのインデックス
-	 * @return	取得した要素
-	 * @note	事前にスタックが空でないことを確認しておくこと。
-	 * @note	最悪計算量はO(1)。
+	 * 指定したスタックから要素を削除
+	 * @param[in]	index	指定したスタック
+	 * @return	削除した要素
+	 * @note	計算量は O(1)。
 	 */
 	TYPE
-	pop(size_t i)
+	pop(size_t index)
 		{
-			assert(i < N);
-			assert(0 < length_[i]);
+			assert(index < N);
+			assert(0 < length_[index]);
 
-			size_t j = --length_[i];
-			j *= N;
-			j += i;
+			length_[index]--;
+			size_t i = length_[index] * N + index;
 
-			return stack_[j];
+			return stack_[i];
 		}
 
 	/**
-	 * スタックの状態を出力
-	 * @param	file	出力先
+	 * 全てのスタックの状態を出力
+	 * @param[in,out]	file	出力先
 	 */
 	void
 	print(FILE* file) const
 		{
+			assert(file);
+
+			size_t k;
+
 			for (size_t i(0); i < N; ++i) {
 				std::fprintf(file, "[%lu] ", i);
 				for (size_t j(0); j < length_[i]; ++j) {
-					size_t k = j * N + i;
-					if (0 < j) std::printf(", ");
+					if (0 < j) std::fprintf(file, ", ");
+					k = j * N + i;
 					std::fprintf(file, "%G", (double)stack_[k]);
 				}
 				std::fprintf(file, "\n");
@@ -153,7 +141,7 @@ public:
  */
 int main()
 {
-	MultiStack<int, 3>* stack = new MultiStack<int, 3>(1);
+	MultiStack<int, 3>* stack = new MultiStack<int, 3>;
 
 	stack->push(1, 5);
 	stack->push(1, 6);
@@ -164,9 +152,9 @@ int main()
 	stack->push(1, 10);
 	stack->push(1, 12);
 	stack->print(stdout);
-	if (!stack->empty(0)) {
-		std::printf(">>>> %d\n", stack->top(0));
-		std::printf(">>>> %d\n", stack->pop(0));
+	if (0 < stack->size(1)) {
+		std::printf(">>>> %d\n", stack->top(1));
+		std::printf(">>>> %d\n", stack->pop(1));
 	}
 	stack->print(stdout);
 
