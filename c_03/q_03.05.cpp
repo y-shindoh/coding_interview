@@ -6,6 +6,11 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  MyQueueというクラス名で、2つのスタックを用いてキューを実装してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
@@ -24,37 +29,29 @@ private:
 	std::vector<TYPE> output_;	///< 出力用スタック (LIFOを実現)
 
 	/**
-	 * スタック間で要素移動
-	 * @note	計算量をおさえるため、出力用スタックが空の時にのみ動作。
+	 * 要素取り出しの準備
+	 * @note	計算量は O(n)。ただし n は入力用スタックの持つ要素数。
 	 */
 	void
-	adjust_stacks()
+	prepare()
 		{
-			if (output_.empty()) {
-				TYPE data;
-				while (!input_.empty()) {
-					data = input_.back();
-					input_.pop_back();
-					output_.push_back(data);
-				}
+			assert(output_.empty());
+
+			TYPE data;
+
+			while (!input_.empty()) {
+				data = input_.back();
+				input_.pop_back();
+				output_.push_back(data);
 			}
 		}
 
 public:
 
 	/**
-	 * デストラクタ
-	 */
-	virtual
-	~MyDueue()
-		{
-			;
-		}
-
-	/**
-	 * 空かどうか確認
-	 * @return	true: 空, false: 空でない
-	 * @note	最悪計算量はO(1)。
+	 * 空か否かを確認
+	 * @return	true: 要素がない, false: 要素がある
+	 * @note	計算量は O(1)。
 	 */
 	bool
 	empty() const
@@ -65,25 +62,22 @@ public:
 	/**
 	 * 先頭要素を取得
 	 * @return	先頭要素
-	 * @note	事前にキューが空でないことを確認すること。
-	 * @note	最悪計算量はO(n)。ただしnは @a stack_ の長さ。
+	 * @note	最悪計算量は O(n)。ただし n は入力用スタックの持つ要素数。
 	 */
 	TYPE
 	front()
 		{
 			assert(!input_.empty() || !output_.empty());
 
-			adjust_stacks();
-
-			assert(!output_.empty());
+			if (output_.empty()) prepare();
 
 			return output_.back();
 		}
 
 	/**
-	 * 要素を追加
-	 * @param[in]	data	追加するデータ
-	 * @note	ならし解析の計算量はO(1)となる。最悪計算量はO(n)で、nは @a stack_ の長さ。
+	 * 要素を末尾に追加
+	 * @param[in]	data	追加する要素
+	 * @note	最悪計算量は O(n)。ただし n は入力用スタックの持つ要素数。
 	 */
 	void
 	enqueue(const TYPE& data)
@@ -92,23 +86,23 @@ public:
 		}
 
 	/**
-	 * 要素を削除
-	 * @param[out]	data	削除した要素
-	 * @note	事前にキューが空でないことを確認すること。
-	 * @note	最悪計算量はO(n)。ただしnは @a stack_ の長さ。
+	 * 要素を先頭から削除
+	 * @return	先頭要素
+	 * @note	最悪計算量は O(n)。ただし n は入力用スタックの持つ要素数。
 	 */
-	void
-	dequeue(TYPE* data = 0)
+	TYPE
+	dequeue()
 		{
 			assert(!input_.empty() || !output_.empty());
 
-			adjust_stacks();
+			if (output_.empty()) prepare();
 
-			assert(!output_.empty());
-
-			if (data) *data = output_.back();
+			TYPE data = output_.back();
 			output_.pop_back();
+
+			return data;
 		}
+
 };
 
 /**
@@ -129,7 +123,7 @@ int main()
 	std::printf("***DEQUEUE***\n");
 	int j;
 	while (!queue->empty()) {
-		queue->dequeue(&j);
+		j = queue->dequeue();
 		std::printf("%d\n", j);
 	}
 
