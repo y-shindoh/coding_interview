@@ -43,6 +43,7 @@ sort_stack(std::vector<TYPE>& stack,
 
 	do {
 		i = 0;
+		// 最大値の探索
 		k = -1;
 		while (h == 0 || i + h < l) {
 			data = stack.back();
@@ -56,11 +57,13 @@ sort_stack(std::vector<TYPE>& stack,
 			++i;
 			if (stack.empty()) break;
 		}
-		stack.push_back(max);	// 大きな値をスタックの奥に格納
+		// 最大値の格納
+		stack.push_back(max);
+		// 最大値以外の要素の格納
 		while (0 <= --i) {
 			data = buffer.back();
 			buffer.pop_back();
-			if (k == i) continue;	// 格納済みの値をスキップ
+			if (k == i) continue;	// 最大値をスキップ
 			stack.push_back(data);
 		}
 	} while (++h < l);
