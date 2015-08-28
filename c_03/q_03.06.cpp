@@ -14,7 +14,7 @@
   スタック以外のデータ構造 (配列など) に
   スタック上のデータをコピーしてはいけません。
   また、スタックは以下の操作のみ使用できます。
-  push, pop, peek, isEmpty
+  push, pop, peek, isEmpty (std::vector の push_back, pop_back, back, empty)
  */
 
 #include <cstddef>
