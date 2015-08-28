@@ -6,6 +6,17 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  スタック上のデータを小さい順に並べ替えるプログラムを書いてください
+  (最も小さいアイテムがトップに来る)。
+  データ保持のために追加のスタックを用いてもかまいませんが、
+  スタック以外のデータ構造 (配列など) に
+  スタック上のデータをコピーしてはいけません。
+  また、スタックは以下の操作のみ使用できます。
+  push, pop, peek, isEmpty
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -15,46 +26,44 @@
 /**
  * スタックをソーティング
  * @param[in,out]	stack	ソーティング対象のスタック
- * @param	buffer	作業領域
- * @note	計算量はΘ(n^2)。
+ * @param[out]	buffer	作業領域
+ * @note	計算量は O(n^2)。
  */
 template<typename TYPE>
 void
 sort_stack(std::vector<TYPE>& stack,
 		   std::vector<TYPE>& buffer)
 {
-	bool flag(true);
-	size_t length(0);
-	size_t done(0);
-	size_t h, i;
-	TYPE tmp, max;
+	int i, k;
+	int h(0);
+	int l(0);
+	TYPE data, max;
 
-	while ('-') {
-		// forward
-		h = i = 0;
-		for (size_t j(done); flag ? !stack.empty() : j < length ; ++j) {
-			tmp = stack.back();
+	buffer.clear();
+
+	do {
+		i = 0;
+		k = -1;
+		while (h == 0 || i + h < l) {
+			data = stack.back();
 			stack.pop_back();
-			buffer.push_back(tmp);
-			if (i == 0 || max <= tmp) {
-				h = i;
-				max = tmp;
+			if (k < 0 || max < data) {
+				k = i;
+				max = data;
 			}
-			++i;	// 対になるように (1)
-			if (flag) ++length;
+			buffer.push_back(data);
+			if (h == 0) ++l;
+			++i;
+			if (stack.empty()) break;
 		}
-		stack.push_back(max);
-		// backward
-		while (!buffer.empty()) {
-			--i;	// 対になるように (2)
-			tmp = buffer.back();
+		stack.push_back(max);	// 大きな値をスタックの奥に格納
+		while (0 <= --i) {
+			data = buffer.back();
 			buffer.pop_back();
-			if (i != h) stack.push_back(tmp);
+			if (k == i) continue;	// 格納済みの値をスキップ
+			stack.push_back(data);
 		}
-		// check
-		if (length <= ++done) break;
-		flag = false;
-	}
+	} while (++h < l);
 }
 
 /**
