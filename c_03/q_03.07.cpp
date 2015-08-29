@@ -27,33 +27,43 @@
 
 /**
  * @class	複数のqueueを1つのqueueとして見ことも個別のqueueとして見ることもできる拡張queue
- * @note	テンプレートの型 @a TYPE はqueueのキーの型。
- * @note	テンプレートの整数 @a SIZE は個別のqueueの総数。
+ * @note	本当はIDを再調整する処理が必要だが、ここでは省略する。
  */
-template<typename TYPE, size_t SIZE>
+template<typename TYPE, size_t N>
 class MultiQueue
 {
 private:
 
-	std::deque<size_t> index_queue_;	///< 全体を管理するqueue
-	std::deque<TYPE> data_queue_[SIZE];	///< データを持つ個別queue
-	size_t remain_[SIZE];				///< @a index_queue_ と @a data_queue_ の要素数差
-	size_t length_;
+	/**
+	 * queue群
+	 * @note	各queueの要素はIDと値のペア。
+	 */
+	std::deque<std::pair<size_t, TYPE> > queues_[N];
+
+	size_t count_;	///< queue内各要素のIDの基準
+	size_t length_;	///< queue全体の要素数
 
 	/**
-	 * @a index_queue_ の調整
+	 * 最も古い要素を持つqueueを見つける
+	 * @return	最も古い要素を持つqueueのID
+	 * @note	見つからなかった場合は N 以上の整数を返却する。
+	 * @note	計算量は O(1)。ただし N を定数と仮定する。
 	 */
-	void
-	adjust_deque()
+	size_t
+	find_oldest_front() const
 		{
-			size_t i;
+			int k(N);
+			size_t id, t;
 
-			while (!index_queue_.empty()) {
-				i = index_queue_.front();
-				if (!remain_[i]) break;
-				index_queue_.pop_front();
-				--remain_[i];
+			for (int i(0); i < (int)N; ++i) {
+				if (queues_[i].empty()) continue;
+				t = queues_[i].back().first;
+				if (k < N && id <= t) continue;
+				k = i;
+				id = t;
 			}
+
+			return (size_t)k;
 		}
 
 public:
@@ -62,22 +72,54 @@ public:
 	 * コンストラクタ
 	 */
 	MultiQueue()
-		: length_(0)
-		{
-			std::memset((void*)remain_, 0, sizeof(remain_));
-		}
-
-	/**
-	 * デストラクタ
-	 */
-	virtual
-	~MultiQueue()
+		: count_(0), length_(0)
 		{
 			;
 		}
 
 	/**
-	 * 要素数を取得
+	 * 指定したキューが空か否かを確認
+	 * @param[in]	index	キューのインデックス
+	 * @return	true: 空, false: 空でない
+	 * @note	計算量は O(1)。
+	 */
+	bool
+	empty(size_t index) const
+		{
+			assert(index < N);
+
+			return queues_[index].empty();
+		}
+
+	/**
+	 * キュー全体が空か否かを確認
+	 * @return true: 空, false: 空でない
+	 * @note	計算量は O(1)。
+	 */
+	bool
+	empty() const
+		{
+			return length_ == 0;
+		}
+
+	/**
+	 * 指定したキューが持つ要素数を取得
+	 * @param[in]	index	キューのインデックス
+	 * @return	要素数
+	 * @note	計算量は O(1)。
+	 */
+	size_t
+	size(size_t index) const
+		{
+			assert(index < N);
+
+			return queues_[index].size();
+		}
+
+	/**
+	 * キュー全体が持つ要素数を取得
+	 * @return	要素数
+	 * @note	計算量は O(1)。
 	 */
 	size_t
 	size() const
@@ -86,125 +128,81 @@ public:
 		}
 
 	/**
-	 * 個別のdequeの要素数を取得
-	 * @param[in]	i	個別queueのインデックス
-	 */
-	size_t
-	size(size_t i) const
-		{
-			assert(i < SIZE);
-
-			return data_queue_[i].size();
-		}
-
-	/**
-	 * 空かどうか確認
-	 * @return	true: 空, false: 空でない
-	 * @note	最悪計算量はO(1)。
-	 */
-	bool
-	empty() const
-		{
-			return index_queue_.empty();
-		}
-
-	/**
-	 * 個別のdequeが空かどうか確認
-	 * @param[in]	i	個別queueのインデックス
-	 * @return	true: 空, false: 空でない
-	 * @note	最悪計算量はO(1)。
-	 */
-	bool
-	empty(size_t i) const
-		{
-			assert(i < SIZE);
-
-			return data_queue_[i].empty();
-		}
-
-	/**
-	 * 先頭要素を取得
-	 * @return	先頭要素
-	 * @note	事前にqueueが空でないことを確認すること。
-	 * @note	最悪計算量はO(1)。
-	 */
-	TYPE
-	front() const
-		{
-			assert(!index_queue_.empty());
-
-			size_t i = index_queue_.front();
-			return data_queue_[i].front();
-		}
-
-	/**
-	 * 個別queueの先頭要素を取得
-	 * @param[in]	i	個別queueのインデックス
-	 * @return	個別queueの先頭要素
-	 * @note	事前にqueueが空でないことを確認すること。
-	 * @note	最悪計算量はO(1)。
-	 */
-	TYPE
-	front(size_t i) const
-		{
-			assert(i < SIZE);
-			assert(!data_queue_[i].empty());
-
-			return data_queue_[i].front();
-		}
-
-	/**
-	 * 個別queueに要素を追加
-	 * @param[in]	i	個別queueのインデックス
-	 * @param[in]	data	追加するデータ
-	 * @note	最悪計算量はO(1)。
+	 * 指定したキューに要素を追加
+	 * @param[in]	index	キューのインデックス
+	 * @param[in]	data	追加する要素
+	 * @note	計算量は O(1)。
 	 */
 	void
-	enqueue(size_t i,
+	enqueue(size_t index,
 			const TYPE& data)
 		{
-			assert(i < SIZE);
+			assert(index < N);
 
-			index_queue_.push_back(i);
-			data_queue_[i].push_back(data);
+			queues_[index].push_back(std::pair<size_t, TYPE>(count_, data));
+			++count_;
 			++length_;
 		}
 
 	/**
-	 * 要素を削除
-	 * @note	事前にqueueが空でないことを確認すること。
+	 * 指定したキューの先頭要素を取得
+	 * @param[in]	index	キューのインデックス
+	 * @return	先頭要素
+	 * @note	計算量は O(1)。
+	 */
+	TYPE
+	front(size_t index) const
+		{
+			assert(index < N);
+			assert(!queues_[index].empty());
+
+			return queues_[index].front().second;
+		}
+
+	/**
+	 * キュー全体の先頭要素を取得
+	 * @return	先頭要素
+	 * @note	計算量は O(1)。ただし N を定数と仮定する。
+	 */
+	TYPE
+	front() const
+		{
+			assert(0 < length_);
+
+			size_t i = find_oldest_front();
+			assert(i < N);
+
+			return queues_[i].front().second;
+		}
+
+	/**
+	 * 指定したキューの先頭要素を削除
+	 * @param[in]	index	キューのインデックス
+	 * @note	キューが空の場合は何もしない。
+	 * @note	計算量は O(1)。
 	 */
 	void
-	dequeue()
+	dequeue(size_t index)
 		{
-			assert(!index_queue_.empty());
+			assert(index < N);
 
-			size_t i = index_queue_.front();
-			index_queue_.pop_front();
-			data_queue_[i].pop_front();
-			adjust_deque();
+			if (queues_[index].empty()) return;
+			queues_[index].pop_front();
 			--length_;
 		}
 
 	/**
-	 * 個別queueの要素を削除
-	 * @param[in]	i	個別queueのインデックス
-	 * @note	事前にqueueが空でないことを確認すること。
+	 * キュー全体の先頭要素を削除
+	 * @note	キューが空の場合は何もしない。
+	 * @note	計算量は O(1)。ただし N は定数と仮定する。
 	 */
 	void
-	dequeue(size_t i)
+	dequeue()
 		{
-			assert(i < SIZE);
-			assert(!data_queue_[i].empty());
+			if (0 == length_) return;
 
-			data_queue_[i].pop_front();
-			if (i == index_queue_.front()) {
-				index_queue_.pop_front();
-				adjust_deque();
-			}
-			else {
-				++remain_[i];
-			}
+			size_t i = find_oldest_front();
+			queues_[i].pop_front();
 			--length_;
 		}
 };
