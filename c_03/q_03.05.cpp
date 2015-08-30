@@ -26,7 +26,7 @@ class MyDueue
 private:
 
 	std::vector<TYPE> input_;	///< 入力用スタック
-	std::vector<TYPE> output_;	///< 出力用スタック (LIFOを実現)
+	std::vector<TYPE> output_;	///< 出力用スタック (FIFOを実現)
 
 	/**
 	 * 要素取り出しの準備
@@ -111,7 +111,7 @@ public:
 int main()
 {
 	int data[] = {1, 3, 5, 7, 9};
-	MyDueue<int>* queue = new MyDueue<int>();
+	MyDueue<int>* queue = new MyDueue<int>;
 
 	for (size_t i(0); i < sizeof(data)/sizeof(data[0]); ++i) {
 		queue->enqueue(data[i]);
