@@ -6,27 +6,18 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  二分探索木が与えられたとき、
+  同じ深さのノード同士の連結リストを作るアルゴリズムを設計してください
+  (たとえば、深さDの木があるとき、D個の連結リストを作ることになります)。
+ */
+
 #include <cstddef>
 #include <cstdio>
+#include <vector>
+#include <list>
 #include "binary_search_tree.hpp"
-
-/**
- * 比較関数
- */
-int
-compare(const int& left,
-		const int& right)
-{
-	if (left < right) {
-		return -1;
-	}
-	else if (left > right) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
-}
 
 /**
  * 動作確認用コマンド
@@ -34,28 +25,32 @@ compare(const int& left,
 int main()
 {
 	const int data[] = {0, 1, 2, 3, 4, 5, 6, 7};
-	BinarySearchTree<int>* tree = new BinarySearchTree<int>(compare);
-	std::vector<std::vector<const BinarySearchNode<int>*> > array;
+	Node<int>* node(0);
+	std::vector< std::list<const Node<int>*> > nodes[2];
 
-	// 下記 BinarySearchTree::get_nodes_with_same_depth<f> が回答
+	// 下記 Node<TYPE>::get_nodes_*<f> が回答
 
-	tree->prepare(data, sizeof(data)/sizeof(data[0]));
-	tree->print(stdout);
-	tree->get_nodes_with_same_depth(array);
+	node = Node<int>::Build(data, sizeof(data)/sizeof(data[0]));
+	node->print(stdout);
+	node->get_nodes_dfs(nodes[0]);	// 深さ優先探索
+	node->get_nodes_bfs(nodes[1]);	// 幅優先探索
 
-	const size_t l = array.size();
-	size_t m;
-	for (size_t i(0); i < l; ++i) {
-		m = array[i].size();
-		std::printf("[%lu] ", i);
-		for (size_t j(0); j < m; ++j) {
-			if (0 < j) std::printf(", ");
-			std::printf("%d", array[i][j]->get_key());
+	size_t l;
+	std::list<const Node<int>*>::const_iterator it;
+
+	for (size_t i(0); i < 2; ++i) {
+		l = nodes[i].size();
+		for (size_t j(0); j < l; ++j) {
+			std::printf("[%lu:%lu] ", i, j);
+			for (it = nodes[i][j].begin(); it != nodes[i][j].end(); ++it) {
+				if (it != nodes[i][j].begin()) std::printf(", ");
+				std::printf("%d", (*it)->get_data());
+			}
+			std::printf("\n");
 		}
-		std::printf("\n");
 	}
 
-	delete tree;
+	delete node;
 
 	return 0;
 }
