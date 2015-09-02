@@ -6,27 +6,15 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  昇順にソートされた配列が与えられたとき、
+  高さが最小になる二分探索木を作るアルゴリズムを書いてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include "binary_search_tree.hpp"
-
-/**
- * 比較関数
- */
-int
-compare(const int& left,
-		const int& right)
-{
-	if (left < right) {
-		return -1;
-	}
-	else if (left > right) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
-}
 
 /**
  * 動作確認用コマンド
@@ -35,15 +23,15 @@ int main()
 {
 	const int data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 	const int keys[] = {5, 21, 0};
-	BinarySearchTree<int>* tree = new BinarySearchTree<int>(compare);
+	Node<int>* node;
 
-	// 下記 BinarySearchTree::prepare<f> が回答
+	// 下記 Node<TYPE>::Build<f> が回答
 
-	tree->prepare(data, sizeof(data)/sizeof(data[0]));
-	tree->print(stdout);
+	node = Node<int>::Build(data, sizeof(data)/sizeof(data[0]));
+	node->print(stdout);
 
 	for (size_t i(0); i < sizeof(keys)/sizeof(keys[0]); ++i) {
-		if (tree->search(keys[i])) {
+		if (node->search(keys[i])) {
 			std::printf("[%d]\ttrue\n", keys[i]);
 		}
 		else {
@@ -51,7 +39,7 @@ int main()
 		}
 	}
 
-	delete tree;
+	delete node;
 
 	return 0;
 }
