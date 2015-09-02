@@ -179,6 +179,20 @@ public:
 			data_ = data;
 		}
 
+#ifdef	_USE_TRACE_BACK_TREE_
+
+	/**
+	 * 親ノードを取得
+	 * @return	親ノード
+	 */
+	const Node<TYPE>*
+	get_parent() const
+		{
+			return parent_;
+		}
+
+#endif	// _USE_TRACE_BACK_TREE_
+
 	/**
 	 * データを追加
 	 * @param[in]	data	追加するデータ
@@ -419,6 +433,36 @@ public:
 
 			return 0;
 		}
+
+#ifdef	_USE_TRACE_BACK_TREE_
+
+	/**
+	 * 値の合計が指定値になる親〜子孫のシーケンス群を取得
+	 * @param[out]	results	シーケンス群 (各要素は始端と終端のノードの組)
+	 * @param[in]	value	合計値
+	 * @note	計算量は O(n log n)。ただし n は木のノードの総数。
+	 */
+	void
+	get_sequence(std::vector< std::pair<const Node<TYPE>*, const Node<TYPE>*> >& results,
+				 const TYPE& value) const
+		{
+			const Node<TYPE>* base = get_min();
+			const Node<TYPE>* node;
+			TYPE sum;
+
+			while (base) {
+				sum = (TYPE)0;
+				node = base;
+				while (node) {
+					sum += node->data_;
+					if (sum == value) results.push_back(std::pair<const Node<TYPE>*, const Node<TYPE>*>(node, base));
+					node = node->parent_;
+				}
+				base = base->get_next();
+			}
+		}
+
+#endif	// _USE_TRACE_BACK_TREE_
 
 	/**
 	 * ツリーを出力
