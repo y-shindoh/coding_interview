@@ -6,6 +6,13 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  二分木が平衡かどうかを調べる関数を実装してください。
+  平衡木とは、どのノードの2つの部分木も、
+  その高さの差が1以下であるような木と定義します。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include "binary_search_tree.hpp"
@@ -34,21 +41,21 @@ compare(const int& left,
 int main()
 {
 	const int data[] = {0, 1, 2, 3, 4, 5, 6, 7};
-	BinarySearchTree<int>* tree = new BinarySearchTree<int>(compare);
+	Node<int>* node(0);
 
-	// 下記 BinarySearchTree::is_balanced<f> が回答
+	// 下記 Node<TYPE>::is_balanced<f> が回答
 
-	tree->prepare(data, sizeof(data)/sizeof(data[0]));
-	tree->print(stdout);
-	std::printf("=> %s\n", tree->is_balanced() ? "balanced" : "unbalanced");
-	tree->add(-1);
-	tree->print(stdout);
-	std::printf("=> %s\n", tree->is_balanced() ? "balanced" : "unbalanced");
-	tree->add(8);
-	tree->print(stdout);
-	std::printf("=> %s\n", tree->is_balanced() ? "balanced" : "unbalanced");
+	node = Node<int>::Build(data, sizeof(data)/sizeof(data[0]));
+	node->print(stdout);
+	std::printf("=> %s\n", node->is_balanced() ? "balanced" : "unbalanced");
+	node->add(7);
+	node->print(stdout);
+	std::printf("=> %s\n", node->is_balanced() ? "balanced" : "unbalanced");
+	node->add(-1);
+	node->print(stdout);
+	std::printf("=> %s\n", node->is_balanced() ? "balanced" : "unbalanced");
 
-	delete tree;
+	delete node;
 
 	return 0;
 }
