@@ -6,612 +6,514 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
-#ifndef	__BINARY_SEARCH_TREE_HPP__
-#define	__BINARY_SEARCH_TREE_HPP__	"binary_search_tree.hpp"
-
-//#define	__BINARY_SEARCH_TREE_GET_RAW_DATA__	"ノードに直接アクセス可能にする。"
-//#define	__BINARY_SEARCH_TREE_ENABLE_PARENT__	"ノードの親ポインタを有効にする。"
+#ifndef	_BINARY_SEARCH_TREE_HPP_
+#define	_BINARY_SEARCH_TREE_HPP_	"binary_search_tree.hpp"
 
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
 #include <vector>
+#include <list>
 #include <deque>
+
+//#define	_USE_TRACE_BACK_TREE_	"use trace back tree."
 
 /**
  * 二分探索木のノード
- * @note	テンプレートの型 @a TYPE は木が保持する型。
  */
 template<typename TYPE>
-class BinarySearchNode
+class Node
 {
 private:
 
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
-	BinarySearchNode<TYPE>* parent_;		///< 親ノード (ルートは @a 0)
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
-	BinarySearchNode<TYPE>* children_[2];	///< 子ノード (葉ノードは @a 0 )
-	TYPE key_;								///< キー
+	Node<TYPE>* children_[2];	///< 子ノード
+#ifdef	_USE_TRACE_BACK_TREE_
+	Node<TYPE>* parent_;		///< 親ノード
+#endif	// _USE_TRACE_BACK_TREE_
+	TYPE data_;					///< 保持するデータ
 
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
 	/**
-	 * メソッド @a FindSameParent の補助関数
-	 * @param[in]	first	ノード1
-	 * @param[in]	second	ノード2
-	 * @param[in]	ignore	処理対象外のノード (呼び出し直後のみ有効)
-	 * @retval	true: ノード @a second はノード @a first かその子孫
-	 * @retval	false: ノード @a second はノード @a first やその子孫でない
+	 * 木の深さの高低差が1以下か確認 (補助メソッド)
+	 * @param[in]	depth	ノードの深さ
+	 * @param[in,out]	shortest	最も浅い葉の深さ
+	 * @param[in,out]	longest	最も深い葉の深さ
+	 * @return	true: 1以下, false: 2以上
+	 * @note	最悪計算量は O(n)。ただし n は部分木のノードの総数。
+	 * @note	深さ優先探索で実装している。
 	 */
-	static bool
-	FindSameParentRoutine(const BinarySearchNode<TYPE>* first,
-						  const BinarySearchNode<TYPE>* second,
-						  const BinarySearchNode<TYPE>* ignore = 0)
+	bool
+	is_balanced(size_t depth,
+				size_t& shortest,
+				size_t& longest) const
 		{
-			if (first == second) return true;
+			bool flag;
 
-			// 子方向に下りながら探索
 			for (size_t i(0); i < 2; ++i) {
-				if (!first->children_[i]) continue;
-				if (first->children_[i] == ignore) continue;
-				if (FindSameParentRoutine(first->children_[i], second)) return true;
+				if (children_[i]) {
+					flag = children_[i]->is_balanced(depth+1, shortest, longest);
+					if (!flag) return false;
+				}
+				else {
+					if (depth < shortest) shortest = depth;
+					if (longest < depth) longest = depth;
+					if (shortest + 1 < longest) return false;
+				}
+			}
+
+			return true;
+		}
+
+	/**
+	 * 子孫ノードか否かを確認
+	 * @param[in]	child	確認対象の子ノード候補
+	 * @return	true: 子孫ノード, false: 子孫ノードでない
+	 * @note	最悪計算量は O(n)。ただし n は部分木のノードの総数。
+	 * @note	深さ優先探索で実装している。
+	 */
+	bool
+	have_child(const Node<int>* child) const
+		{
+			assert(child);
+
+			if (this == child) return true;
+
+			bool flag;
+
+			for (size_t i(0); i < 2; ++i) {
+				if (!children_[i]) continue;
+				flag = children_[i]->have_child(child);
+				if (flag) return true;
 			}
 
 			return false;
 		}
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
 
 	/**
-	 * メソッド @a PrintTree の補助関数
-	 * @param[out]	file	出力先ファイル
-	 * @param[in]	node	出力対象のノード
-	 * @param[in]	prefix	ノード前に記述する文字
-	 * @param[in]	depth	深さ
+	 * 全ての子孫ノードの値が同一か確認
+	 * @param[in]	node	比較対象のノード
+	 * @return	true: 同一, false: 同一でない
+	 * @note	最悪計算量は O(n)。
+				ただし n は、部分木のノードの総数と引数 @a node のノードの総数のうち、小さい方。
+	 * @note	平均メモリ使用量は O(log n)。
+				ただし n は、部分木のノードの総数と引数 @a node のノードの総数のうち、小さい方。
 	 */
-	static void
-	PrintTreeRoutine(FILE* file,
-					 const BinarySearchNode<TYPE>* node,
-					 const char prefix,
-					 size_t depth)
+	bool
+	have_subtree_routine(const Node<TYPE>* node) const
 		{
-			for (size_t i(0); i < depth; ++i) std::printf("  ");
-			std::printf("%c:%G\n", prefix, (double)node->key_);
+			assert(node);
+
+			if (this->data_ != node->data_) return false;
+
+			bool flag;
+
+			for (size_t i(0); i < 2; ++i) {
+				if (!this->children_[i] != !node->children_[i]) return false;
+				if (!this->children_[i]) continue;
+				flag = this->children_[i]->have_subtree_routine(node->children_[i]);
+				if (!flag) return false;
+			}
+
+			return true;
 		}
 
 public:
 
+#ifdef	_USE_TRACE_BACK_TREE_
+
 	/**
 	 * コンストラクタ
-	 * @param[in]	key	ノードが保持するキー
+	 * @param[in]	data	保持させるデータ
 	 */
-	BinarySearchNode(const TYPE& key)
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
-		: parent_(0), key_(key)
-#else	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
-		: key_(key)
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
+	Node(const TYPE& data)
+		: parent_(0), data_(data)
 		{
-			children_[0] = 0;
-			children_[1] = 0;
+			children_[0] = children_[1] = 0;
 		}
+
+#else	// _USE_TRACE_BACK_TREE_
+
+	/**
+	 * コンストラクタ
+	 * @param[in]	data	保持させるデータ
+	 */
+	Node(const TYPE& data)
+		: data_(data)
+		{
+			children_[0] = children_[1] = 0;
+		}
+
+#endif	// _USE_TRACE_BACK_TREE_
 
 	/**
 	 * デストラクタ
+	 * @note	計算量は O(n)。ただし n は部分木のノードの総数。
 	 */
-	~BinarySearchNode()
+	virtual
+	~Node()
 		{
-			if (children_[0]) delete children_[0];
-			if (children_[1]) delete children_[1];
+			for (size_t i (0); i < 2; ++i) {
+				if (!children_[i]) continue;
+				delete children_[i];
+			}
 		}
 
 	/**
-	 * ノードにキーを直接設定
-	 * @param[in]	key	設定するキー
-	 */
-	void
-	set_key(const TYPE& key)
-		{
-			key_ = key;
-		}
-
-	/**
-	 * ノードのキーを直接取得
-	 * @return	ノードのキー
+	 * データを取得
+	 * @return	データ
+	 * @note	計算量は O(1)。
 	 */
 	TYPE
-	get_key() const
+	get_data() const
 		{
-			return key_;
+			return data_;
 		}
 
 	/**
-	 * メソッド @a BinarySearchTree::prepare の本体
-	 * @param[in]	input	処理対象の降順ソート済み配列
-	 * @param[in]	start	引数 @a input の処理対象の始点
-	 * @param[in]	end	引数 @a input の処理対象の終点
+	 * データを設定
+	 * @param[in]	data	データ
+	 * @note	計算量は O(1)。
 	 */
-	static BinarySearchNode<TYPE>*
-	PrepareTree(const TYPE* input,
-				size_t start,
-				size_t end)
+	void
+	set_data(const TYPE& data)
 		{
-			size_t center = (end + start) / 2;
-			BinarySearchNode<TYPE>* node = new BinarySearchNode<TYPE>(input[center]);
+			data_ = data;
+		}
 
-			if (start < center) {
-				node->children_[0] = PrepareTree(input, start, center - 1);
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
-				if (node->children_[0]) node->children_[0]->parent_ = node;
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
+	/**
+	 * データを追加
+	 * @param[in]	data	追加するデータ
+	 * @note	平均計算量は O(log n)。ただし n は部分木のノードの総数。
+	 */
+	void
+	add(const TYPE& data)
+		{
+			Node<TYPE>* node(this);
+			size_t i;
+
+			while ('-') {
+				i = (data <= node->data_) ? 0 : 1;
+
+				if (node->children_[i]) {
+					node = node->children_[i];
+					continue;
+				}
+
+				node->children_[i] = new Node<TYPE>(data);
+#ifdef	_USE_TRACE_BACK_TREE_
+				node->children_[i]->parent_ = node;
+#endif	// _USE_TRACE_BACK_TREE_
+				return;
 			}
-			if (center < end) {
-				node->children_[1] = PrepareTree(input, center + 1, end);
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
-				if (node->children_[1]) node->children_[1]->parent_ = node;
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
+		}
+
+	/**
+	 * 木の中のデータを探索
+	 * @param[in]	data	探索対象のデータ
+	 * @return	データを保持するノード (探索失敗時は 0 が返る)
+	 * @note	平均計算量は O(log n)。ただし n は木のノード数。
+	 */
+	Node<TYPE>*
+	search(const TYPE& data)
+		{
+			Node<TYPE>* node(this);
+			size_t i;
+
+			while (node) {
+				if (node->data_ == data) break;
+				i = (data <= node->data_) ? 0 : 1;
+				node = node->children_[i];
 			}
 
 			return node;
 		}
 
 	/**
-	 *  メソッド @a BinarySearchTree::add の本体
-	 * @param[in]	node	追加対象のノード
-	 * @param[in]	compare	キー比較の関数
-	 * @param[in]	data	追加対象のキー
-	 * @return	処理対象のノード (基本的には引数 @a node に等しい)
-	 * @note	引数 @a node が @a 0 の場合、新規生成したノードを返す。
-	 */
-	static BinarySearchNode<TYPE>*
-	AddNode(BinarySearchNode<TYPE>* node,
-			int (* compare)(const TYPE&, const TYPE&),
-			const TYPE& data)
-		{
-			assert(compare);
-
-			int v;
-
-			if (node) {
-				v = compare(data, node->key_);
-				if (v < 0) {
-					node->children_[0] = AddNode(node->children_[0], compare, data);
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
-					if (node->children_[0]) node->children_[0]->parent_ = node;
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
-				}
-				else if (0 < v) {
-					node->children_[1] = AddNode(node->children_[1], compare, data);
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
-					if (node->children_[1]) node->children_[1]->parent_ = node;
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
-				}
-				else {
-					assert(!"Found a duplicated key!");	// 重複キーを認めない
-				}
-				return node;
-			}
-
-			return new BinarySearchNode<TYPE>(data);
-		}
-
-	/**
-	 *  メソッド @a BinarySearchTree::search の本体
-	 * @param[in]	node	探索対象のノード
-	 * @param[in]	compare	キー比較の関数
-	 * @param[in]	data	探索対象のキー
-	 * @return	ヒットしたノード (ヒットしなかった場合は @a 0 が返る)
-	 */
-	static const BinarySearchNode<TYPE>*
-	SearchKey(const BinarySearchNode<TYPE>* node,
-			  int (* compare)(const TYPE&, const TYPE&),
-			  const TYPE& data)
-		{
-			assert(node);
-			assert(compare);
-
-			int v;
-
-			while (node) {
-				v = compare(data, node->key_);
-				if (v < 0) {
-					node = node->children_[0];
-					continue;
-				}
-				if (0 < v) {
-					node = node->children_[1];
-					continue;
-				}
-				return node;
-			}
-
-			return 0;
-		}
-
-	/**
-	 * 葉ノードまでの最短・最長距離を算出
-	 * @param[in]	node	ノード
-	 * @param[out]	min	最短距離 (呼び出し時に @a ~0 を含む変数を指定)
-	 * @param[out]	max	最長距離 (呼び出し時に @a 0 を含む変数を指定)
-	 * @param[in]	現時点での呼び出し元からの距離
-	 * @note	タスクによっては、
-				maxとminの差が一定以上大きくなった時点で終了させることも考える。
-	 */
-	static void
-	GetDepth(const BinarySearchNode<TYPE>* node,
-			 size_t& min,
-			 size_t& max,
-			 size_t depth = 0)
-		{
-			if (node) {
-				GetDepth(node->children_[0], min, max, depth + 1);
-				GetDepth(node->children_[1], min, max, depth + 1);
-			}
-			else {
-				if (depth < min) min = depth;
-				if (max < depth) max = depth;
-			}
-		}
-
-	/**
-	 * メソッド @a BinarySearchTree::is_correct の本体
-	 * @param[in]	node	処理対象のノード
-	 * @param[in]	compare	キー比較の関数
-	 * @param[in]	min	部分木の最小値
-	 * @param[in]	max	部分木の最大値
-	 * @return	true: 親子関係を守っている, false: 親子関係を守ってない
-	 */
-	static bool
-	CheckRule(const BinarySearchNode<TYPE>* node,
-			  int (* compare)(const TYPE&, const TYPE&),
-			  const TYPE& min,
-			  const TYPE& max)
-		{
-			assert(compare);
-
-			if (node) {
-				if (0 > compare(node->key_, min)) return false;
-				if (0 < compare(node->key_, max)) return false;
-				if (node->children_[0]) {
-					if (0 > compare(node->key_, node->children_[0]->key_)) return false;
-					if (!CheckRule(node->children_[0], compare, min, node->key_)) return false;
-				}
-				if (node->children_[1]) {
-					if (0 < compare(node->key_, node->children_[1]->key_)) return false;
-					if (!CheckRule(node->children_[1], compare, node->key_, max)) return false;
-				}
-			}
-
-			return true;
-		}
-
-	/**
-	 * メソッド @a BinarySearchTree::get_nodes_with_same_depth の本体
-	 * @param[in]	node	処理対象のノード
-	 * @param[in]	depth	深さ
-	 * @param[out]	array	深さ毎のノード
-	 */
-	static void
-	GetNodesWithSameDepth(const BinarySearchNode<TYPE>* node,
-						  size_t depth,
-						  std::vector<std::vector<const BinarySearchNode<TYPE>*> >& array)
-		{
-			assert(node);
-
-			if (array.size() <= depth) array.resize(depth + 1);
-			array[depth].push_back(node);
-
-			if (node->children_[0]) GetNodesWithSameDepth(node->children_[0], depth + 1, array);
-			if (node->children_[1]) GetNodesWithSameDepth(node->children_[1], depth + 1, array);
-		}
-
-	/**
-	 * 2つの木が等しいか否かを確認 (メソッド @a BinarySearchTree::has_subtree の本体)
-	 * @param[in]	first	木 (その1)
-	 * @param[in]	second	木 (その2)
-	 * @return	true: 等しい, false: 等しくない
-	 */
-	static bool
-	CheckSame(const BinarySearchNode<TYPE>* first,
-			  const BinarySearchNode<TYPE>* second)
-		{
-			assert(first);
-			assert(second);
-
-			if (first->key_ != second->key_) return false;
-			if (first->children_[0]) {
-				if (!second->children_[0]) return false;
-				if (!CheckSame(first->children_[0], second->children_[0])) return false;
-			}
-			else {
-				if (second->children_[0]) return false;
-			}
-			if (first->children_[1]) {
-				if (!second->children_[1]) return false;
-				if (!CheckSame(first->children_[1], second->children_[1])) return false;
-			}
-			else {
-				if (second->children_[1]) return false;
-			}
-
-			return true;
-		}
-
-#ifdef	__BINARY_SEARCH_TREE_ENABLE_PARENT__
-	/**
-	 * 次のノードを取得
-	 * @param[in]	node	処理対象のノード
-	 * @param[in]	direction	0: 順方向, 1: 逆方向 (in-orderの順で)
-	 * @return	引数 @a node の次のノード
-	 */
-	static const BinarySearchNode<TYPE>*
-	GetNextNode(const BinarySearchNode<TYPE>* node,
-				size_t direction = 0)
-		{
-			assert(node);
-			assert(direction < 2);
-
-			size_t i = 1 - direction;
-			size_t j = direction;
-
-			// direction = 0: 自分より大きい子孫の最小ノード
-			// direction = 1: 自分より小さい子孫の最大ノード
-			if (node->children_[i]) {
-				node = node->children_[i];
-				while (node->children_[j]) {
-					node = node->children_[j];
-				}
-				return node;
-			}
-
-			// direction = 0: 自分より大きい祖先の最小ノード
-			// direction = 1: 自分より小さい祖先の最大ノード
-			const BinarySearchNode<TYPE>* parent = node->parent_;
-			while (parent && parent->children_[i] == node) {
-				node = parent;
-				parent = node->parent_;
-			}
-			return parent;
-		}
-
-	/**
-	 * 2つのノードに共通するもっとも深い位置の親ノードを取得
-	 * @param[in]	first	ノード1
-	 * @param[in]	second	ノード2
-	 * @return	2つのノードに共通するもっとも深い位置の親ノード
-	 */
-	static const BinarySearchNode<TYPE>*
-	FindSameParent(const BinarySearchNode<TYPE>* first,
-				   const BinarySearchNode<TYPE>* second)
-		{
-			assert(first);
-			assert(second);
-
-			const BinarySearchNode<TYPE>* ignore(0);
-
-			// 親方向にさかのぼりながら子を探索
-			while (first) {
-				if (FindSameParentRoutine(first, second, ignore)) return first;
-				if (!first->parent_) break;
-				ignore = first;
-				first = first->parent_;
-			}
-
-			return 0;
-		}
-#endif	// __BINARY_SEARCH_TREE_ENABLE_PARENT__
-
-	/**
-	 * メソッド @a BinarySearchTree::print の本体
-	 * @param[out]	file	出力先ファイル
-	 * @param[in]	node	出力対象のノード
-	 * @param[in]	prefix	ノード前に記述する文字
-	 * @param[in]	depth	深さ
-	 * @param[in]	position	処理手順 (負: pre-order, 0: in-order, 正: post-order)
-	 */
-	static void
-	PrintTree(FILE* file,
-			  const BinarySearchNode<TYPE>* node,
-			  int position,
-			  const char prefix = '*',
-			  size_t depth = 0)
-		{
-			if (position < 0) PrintTreeRoutine(file, node, prefix, depth);	// pre-order処理
-			if (node->children_[0]) PrintTree(file, node->children_[0], position, 'L', depth+1);
-			if (position == 0) PrintTreeRoutine(file, node, prefix, depth);	// in-order処理
-			if (node->children_[1]) PrintTree(file, node->children_[1], position, 'R', depth+1);
-			if (0 < position) PrintTreeRoutine(file, node, prefix, depth);	// post-order処理
-		}
-
-	/**
-	 * ノードをフィールドに持つ木はフレンド・クラス
-	 */
-	template<typename TYPE_1> friend class BinarySearchTree;
-};
-
-/**
- * @class	二分探索木
- * @note	テンプレートの型 @a TYPE は木が保持する型。
- */
-template<typename TYPE>
-class BinarySearchTree
-{
-private:
-
-	BinarySearchNode<TYPE>* root_;	///< 二分探索木の根
-	TYPE max_;						///< 最大値
-	TYPE min_;						///< 最小値
-
-	/**
-	 * 探索に用いる比較関数
-	 * @note	2つの引数が等しい時は0を、
-				第1引数が大きい場合は負の数を、そうでない場合は正の数を返す。
-	 */
-	int (* compare_)(const TYPE&, const TYPE&);
-
-public:
-
-	/**
-	 * コンストラクタ
-	 * @param[in]	compare	比較関数
-	 */
-	BinarySearchTree(int (* compare)(const TYPE&, const TYPE&) = 0)
-		: root_(0), compare_(compare)
-		{
-			;
-		}
-
-	/**
-	 * デストラクタ
-	 */
-	~BinarySearchTree()
-		{
-			if (root_) delete root_;
-		}
-
-	/**
-	 * 昇順ソート済み配列から平衡二分探索木を構築
-	 * @param[in]	input	処理対象の昇順ソート済みキー配列
-	 * @param[in]	length	引数 @a input の長さ
-	 */
-	void
-	prepare(const TYPE* input,
-			size_t length)
-		{
-			assert(input);
-			assert(length);
-
-			if (root_) delete root_;
-
-			min_ = input[0];
-			max_ = input[length-1];
-			root_ = BinarySearchNode<TYPE>::PrepareTree(input, 0, length - 1);
-		}
-
-	/**
-	 * データ追加
-	 * @param[in]	key	追加対象のキー
-	 * @note	本実装ではキーの重複はないものと仮定する。
-	 */
-	void
-	add(const TYPE& key)
-		{
-			if (0 < compare_(key, min_)) min_ = key;
-			if (0 > compare_(key, max_)) max_ = key;
-			root_ = BinarySearchNode<TYPE>::AddNode(root_, compare_, key);
-		}
-
-#ifdef	__BINARY_SEARCH_TREE_GET_RAW_DATA__
-	/**
-	 * データ探索
+	 * 木の中のデータを探索
 	 * @param[in]	data	探索対象のデータ
-	 * @return	引数 @a data にヒットしたノード
+	 * @return	データを保持するノード (探索失敗時は 0 が返る)
+	 * @note	平均計算量は O(log n)。ただし n は木のノード数。
 	 */
-	BinarySearchNode<TYPE>*
-	search(const TYPE& data)
-		{
-			assert(compare_);
-
-			return (BinarySearchNode<TYPE>*)BinarySearchNode<TYPE>::SearchKey(root_, compare_, data);
-		}
-#else	// __BINARY_SEARCH_TREE_GET_RAW_DATA__
-	/**
-	 * データ探索
-	 * @param[in]	data	探索対象のデータ
-	 * @return	true: 引数 @a data にヒット, false: ヒットしなかった
-	 */
-	bool
+	const Node<TYPE>*
 	search(const TYPE& data) const
 		{
-			assert(compare_);
+			const Node<TYPE>* node(this);
+			size_t i;
 
-			return BinarySearchNode<TYPE>::SearchKey(root_, compare_, data) != 0;
+			while (node) {
+				if (node->data_ == data) break;
+				i = (data <= node->data_) ? 0 : 1;
+				node = node->children_[i];
+			}
+
+			return node;
 		}
-#endif	// __BINARY_SEARCH_TREE_GET_RAW_DATA__
 
 	/**
-	 * 平衡二分探索木か否かを確認
-	 * @return	true: 平衡である, false: 平衡でない
+	 * 最小の値を持つノードを探索
+	 * @return	最小の値を持つノード
+	 * @note	平均計算量は O(log n)。ただし n は木のノードの総数。
+	 */
+	const Node<TYPE>*
+	get_min() const
+		{
+			const Node<TYPE>* node(this);
+
+			while (node->children_[0]) node = node->children_[0];
+
+			return node;
+		}
+
+#ifdef	_USE_TRACE_BACK_TREE_
+
+	/**
+	 * 次のノードを探索 (問題4.6の解答)
+	 * @return	次のノード (探索失敗時は 0 が返る)
+	 * @note	平均計算量は O(log n)。ただし n は木のノードの総数。
+	 */
+	const Node<TYPE>*
+	get_next() const
+		{
+			if (children_[1]) {
+				return children_[1]->get_min();
+			}
+			else {
+				const Node<TYPE>* node(this);
+				while (node->parent_) {
+					if (node == node->parent_->children_[0]) return node->parent_;
+					node = node->parent_;
+				}
+			}
+
+			return 0;
+		}
+
+#endif	// _USE_TRACE_BACK_TREE_
+
+	/**
+	 * 木の深さの高低差が1以下か確認 (問題4.1の解答)
+	 * @return	true: 1以下, false: 2以上
+	 * @note	最悪計算量は O(n)。ただし n は木のノードの総数。
 	 */
 	bool
 	is_balanced() const
 		{
-			size_t min = (size_t)~(size_t)0;
-			size_t max(0);
-			BinarySearchNode<TYPE>::GetDepth(root_, min, max);
-
-			return max <= min + 1;
+			size_t s = ~((size_t)0);
+			size_t l(0);
+			return is_balanced(0, s, l);
 		}
 
 	/**
-	 * 親子関係の正しさをチェック
-	 * @return	true: 正しい, false: 正しくない
-	 */
-	bool
-	is_correct() const
-		{
-			return BinarySearchNode<TYPE>::CheckRule(root_, compare_, min_, max_);
-		}
-
-	/**
-	 * 深さ毎のノードを取得
-	 * @param[out]	array	深さ毎のノード
+	 * 連結リストに同じ深さのノードを格納 (問題4.4の解答)
+	 * @param[out]	nodes	格納先
+	 * @param[in]	depth	処理中の深さ
+	 * @note	計算量は O(n)。ただし n は木のノードの総数。
+	 * @note	深さ優先探索で実装している。
+				実装はシンプルだが、スタックの分だけメモリを食う。
 	 */
 	void
-	get_nodes_with_same_depth(std::vector<std::vector<const BinarySearchNode<TYPE>*> >& array)
+	get_nodes_dfs(std::vector< std::list<const Node<TYPE>*> >& nodes,
+				  size_t depth = 0) const
 		{
-			assert(root_);
-
-			BinarySearchNode<TYPE>::GetNodesWithSameDepth(root_, 0, array);
-		}
-
-	/**
-	 * 部分木を持つか否かを確認
-	 * @param[in]	tree	部分木の候補
-	 * @return	true: 引数 @a tree は部分木, false: 引数 @a tree は部分木でない
-	 * @note	メモリ占有量はO(log m + log n)、計算量はO(k * n)となる。
-				ここで、mは呼び出し元オブジェクトのノード数、
-				nは引数 @a tree のノード数、
-				kは引数 @a tree の根のキーを持つ呼び出し元オブジェクトのノード数。
-	 */
-	bool
-	has_subtree(const BinarySearchTree<TYPE>& tree) const
-		{
-			assert(root_);
-			assert(compare_);
-
-			const BinarySearchNode<TYPE>* node = BinarySearchNode<TYPE>::SearchKey(root_, compare_, tree.root_->get_key());
-
-			if (!node) return false;
-
-			std::deque<const BinarySearchNode<TYPE>*> queue;
-			queue.push_back(node);
-
-			while (!queue.empty()) {
-				node = queue.front();
-				if (BinarySearchNode<TYPE>::CheckSame(node, tree.root_)) return true;
-				for (size_t i(0); i < 2; ++i) {
-					if (!node->children_[i]) continue;
-					queue.push_back(node->children_[i]);	// 重複キー対策
-				}
-				queue.pop_front();
+			if (!children_[0] || !children_[1]) {
+				if (nodes.size() <= depth) nodes.resize(depth+1);
 			}
 
-			return false;
+			for (size_t i(0); i < 2; ++i) {
+				if (!children_[i]) continue;
+				children_[i]->get_nodes_dfs(nodes, depth + 1);
+			}
+
+			nodes[depth].push_back(this);	// post-order
+		}
+
+
+	/**
+	 * 連結リストに同じ深さのノードを格納 (問題4.4の解答)
+	 * @param[out]	nodes	格納先
+	 * @note	計算量は O(n)。ただし n は木のノードの総数。
+	 * @note	幅優先探索で実装している。
+				実装は少し複雑だが、メモリ利用効率が良い。
+	 */
+	void
+	get_nodes_bfs(std::vector< std::list<const Node<TYPE>*> >& nodes) const
+		{
+			std::list<const Node<TYPE>*> queue;
+			typename std::list<const Node<TYPE>*>::const_iterator it;
+
+			queue.push_back(this);
+
+			while (!queue.empty()) {
+				nodes.push_back(queue);
+				queue.clear();
+				for (it = nodes.back().begin(); it != nodes.back().end(); ++it) {
+					for (size_t i(0); i < 2; ++i) {
+						if (!(*it)->children_[i]) continue;
+						queue.push_back((*it)->children_[i]);
+					}
+				}
+			}
 		}
 
 	/**
-	 * 二分探索木をファイルに出力
-	 * @param[out]	file	出力先ファイル
-	 * @param[in]	position	処理手順 (負: pre-order, 0: in-order, 正: post-order)
+	 * 二部探索木の条件を満たしているか確認 (問題4.5の解答)
+	 * @param[in]	min	木のデータの下限
+	 * @param[in]	max	木のデータの上限
+	 * @return	true: 満たしている, false: 満たしていない
+	 * @note	各ノードが min < data_ <= max を満たしているとき、true が返る。
+	 * @note	最初の呼び出し時には型の最小値・最大値を引数に設定すること。
+	 * @note	本メソッドを利用する場合、格納データに型の最小値は使えない。
+	 * @note	最悪計算量は O(n)。ただし n は木のノードの総数。
+	 * @note	平均メモリ使用量は O(log n)。ただし n は木のノードの総数。
+	 */
+	bool
+	check_condition(TYPE min,
+					TYPE max) const
+		{
+			if (data_ <= min) return false;
+			if (max < data_) return false;
+
+			if (children_[0]) {
+				if (!children_[0]->check_condition(min, data_)) return false;
+			}
+
+			if (children_[1]) {
+				if (!children_[1]->check_condition(data_, max)) return false;
+			}
+
+			return true;
+		}
+
+	/**
+	 * 木を部分木として持っているか否かを確認 (問題4.8の解答)
+	 * @param[in]	node	木の根ノード
+	 * @return	部分木の根ノード (持っていない場合は 0 が返る)
+	 * @note	最悪計算量は O(mn)。ただし m は木のノードの総数、n は引数 @a node のノードの総数。
+	 * @note	平均メモリ使用量は O(log n)。
+				ただし n は、部分木のノードの総数と引数 @a node のノードの総数のうち、小さい方。
+	 * @note	補助メソッドを除いて、本メソッドそのものは幅優先探索で実装している。
+	 */
+	const Node<TYPE>*
+	have_subtree(const Node<TYPE>* node) const
+		{
+			assert(node);
+
+			const TYPE data = node->data_;
+			const Node<TYPE>* subhead = search(data);
+
+			if (subhead) {
+				std::deque<const Node<TYPE>*> buffer;
+				buffer.push_back(subhead);
+
+				while (!buffer.empty()) {
+					subhead = buffer.front();
+					buffer.pop_front();
+
+					if (subhead->have_subtree_routine(node)) return subhead;
+
+					for (size_t i(0); i < 2; ++i) {
+						if (!subhead->children_[i]) continue;
+						buffer.push_back(subhead->children_[i]);
+					}
+				}
+			}
+
+			return 0;
+		}
+
+	/**
+	 * ツリーを出力
+	 * @param[out]	file	出力先
+	 * @param[in]	type	各要素に付与する飾り文字
+	 * @param[in]	depth	各要素のインデントの深さ
 	 */
 	void
 	print(FILE* file,
-		  int position = -1) const
+		  char type = 'C',
+		  size_t depth = 0) const
 		{
-			assert(file);
-			assert(root_);
-
-			BinarySearchNode<TYPE>::PrintTree(file, root_, position);
+			if (children_[1]) children_[1]->print(file, 'R', depth+1);
+			for (size_t i(0); i < depth; ++i) std::fprintf(file, "  ");
+			std::fprintf(file, "%c:%G\n", type, (double)data_);
+			if (children_[0]) children_[0]->print(file, 'L', depth+1);
 		}
+
+	/**
+	 * ソート済み配列から二部探索木を生成 (問題4.3の解答)
+	 * @param[in]	array	ソート済み配列
+	 * @param[in]	length	引数 @a array の要素数
+	 * @return	二部探索木のルート・ノード
+	 * @note	引数 @a array に重複がない時、平衡二分探索木を生成する。
+	 * @note	書籍の解答例では重複データが考慮されていない。
+	 */
+	static Node<TYPE>*
+	Build(const TYPE* array,
+		  size_t length)
+		{
+			assert(array);
+
+			Node* node(0);
+
+			if (0 < length) {
+				size_t i = length / 2;
+				// 重複データへの簡易対策
+				size_t j(i), k(i);
+				while (j + 1 < length && array[i] == array[j+1]) ++j;
+				while (1 < k && array[k] == array[i]) --k;
+				if (array[k] != array[i] && i - k <= j - i) i = k;
+				else i = j;
+				// ノード生成
+				node = new Node(array[i]);
+				node->children_[0] = Node<TYPE>::Build(array, i);
+				node->children_[1] = Node<TYPE>::Build(array + i + 1, length - i - 1);
+#ifdef	_USE_TRACE_BACK_TREE_
+				for (size_t i(0); i < 2; ++i) {
+					if (!node->children_[i]) continue;
+					node->children_[i]->parent_ = node;
+				}
+#endif	// _USE_TRACE_BACK_TREE_
+			}
+
+			return node;
+		}
+
+#ifdef	_USE_TRACE_BACK_TREE_
+
+	/**
+	 * 2つのノードを含む最小の部分木を探索 (問題4.7の解答)
+	 * @param[in]	left	ノード (その1)
+	 * @param[in]	right	ノード (その2)
+	 * @param[in]	k	探索済み子ノードのインデックス (未探索なら 2 を代入)
+	 * @return	部分木の根のノード
+	 * @note	最悪計算量は O(n)。ただし n は木のノードの総数。
+	 * @note	出題の意図を考慮し、二分探索木の大小関係を条件として使っていない。
+	 */
+	static const Node<TYPE>*
+	FindMinimumSubtree(const Node<TYPE>* left,
+					   const Node<TYPE>* right,
+					   size_t k = 2)
+		{
+			assert(right);
+
+			bool flag;
+
+			while (left) {
+				if (left == right) return left;
+
+				for (size_t i(0); i < 2; ++i) {
+					if (i == k) continue;
+					if (!left->children_[i]) continue;
+					flag = left->children_[i]->have_child(right);
+					if (flag) return left;
+				}
+
+				if (left->parent_) k = (left->parent_->children_[0] == left) ? 0 : 1;
+				left = left->parent_;	// 親をたどる
+			}
+
+			return 0;
+		}
+
+#endif	// _USE_TRACE_BACK_TREE_
 };
 
-#endif	// __BINARY_SEARCH_TREE_HPP__
+#endif	// _BINARY_SEARCH_TREE_HPP_
