@@ -6,49 +6,36 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  二分木が二分探索木であるかどうかを調べる関数を実装してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
-#define	__BINARY_SEARCH_TREE_GET_RAW_DATA__ 1
+#include <climits>
 #include "binary_search_tree.hpp"
-
-/**
- * 比較関数
- */
-int
-compare(const int& left,
-		const int& right)
-{
-	if (left < right) {
-		return -1;
-	}
-	else if (left > right) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
-}
 
 /**
  * 動作確認用コマンド
  */
 int main()
 {
-	const int data[] = {0, 1, 2, 3, 4, 5, 6};
-	BinarySearchTree<int>* tree = new BinarySearchTree<int>(compare);
+	const int data[] = {0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 7};
+	Node<int>* head(0);
 
-	// 下記 BinarySearchTree::is_correct<f> が回答
+	// 下記 Node<TYPE>::check_condition<f> が回答
 
-	tree->prepare(data, sizeof(data)/sizeof(data[0]));
-	tree->print(stdout);
-	std::printf("=> %s\n", tree->is_correct() ? "OK" : "NG");
+	head = Node<int>::Build(data, sizeof(data)/sizeof(data[0]));
+	head->print(stdout);
+	std::printf("=> %s\n", head->check_condition(INT_MIN, INT_MAX) ? "OK" : "NG");
 
-	BinarySearchNode<int>* node = tree->search(2);
-	node->set_key(7);
-	tree->print(stdout);
-	std::printf("=> %s\n", tree->is_correct() ? "OK" : "NG");
+	Node<int>* node = head->search(2);
+	node->set_data(7);
+	head->print(stdout);
+	std::printf("=> %s\n", head->check_condition(INT_MIN, INT_MAX) ? "OK" : "NG");
 
-	delete tree;
+	delete head;
 
 	return 0;
 }
