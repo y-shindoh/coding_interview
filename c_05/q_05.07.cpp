@@ -28,7 +28,8 @@ int main()
 {
 	// 入力データ
 	// ※ 要素数を m とする。
-	const int data[] = {1, 3, 5, 9, 8, 6, 4, 2, 0};
+	const int data[] = {1, 3, 5, 7, 9, 11, 15, 14, 12, 10, 8, 6, 4, 2, 0};
+	const int max = (int)(sizeof(data) / sizeof(data[0]));
 
 	std::deque<size_t> queue[2][2];
 
@@ -45,6 +46,7 @@ int main()
 	for (size_t i(0); i < sizeof(int) * 8; ++i) {
 		h = i % 2;
 		k = (h + 1) % 2;
+		if (!(max & (~0 << i))) break;	// これ以上は変化なし。
 		for (size_t j(0); j < 2; ++j) {
 			while (!queue[h][j].empty()) {
 				x = queue[h][j].front();
