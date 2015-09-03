@@ -6,17 +6,26 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  偶数ビットと奇数ビットをできるだけ少ない操作で入れ替えるプログラムを書いてください
+  (たとえば、0ビット目と1ビット目、2ビット目と3ビット目を入れ替えます)。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include "bits_operation.hpp"
 
 /**
- * 2n と 2n+1 の位置のビットを交換
+ * 偶数ビットと奇数ビットを交換
+ * @param[in]	value	交換対象の整数
+ * @return	交換後の整数
  */
-unsigned int
-change_adjoining_bits(unsigned int bits)
+template<typename TYPE>
+TYPE
+change_adjoining_bits(TYPE value)
 {
-	return (((unsigned int)0xAAAAAAAA & bits) >> 1) | (((unsigned int)0x55555555 & bits) << 1);
+	return (((TYPE)0xAAAAAAAAAAAAAAAA & value) >> 1) | (((TYPE)0x5555555555555555 & value) << 1);
 }
 
 /**
@@ -27,7 +36,7 @@ int main()
 	unsigned int x(0xCF15DE20);
 
 	print_bits<unsigned int>(stdout, x);
-	print_bits<unsigned int>(stdout, change_adjoining_bits(x));
+	print_bits<unsigned int>(stdout, change_adjoining_bits<unsigned int>(x));
 
 	return 0;
 }
