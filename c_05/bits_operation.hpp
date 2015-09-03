@@ -15,252 +15,54 @@
 
 typedef unsigned long long int bo_uint;
 
+#include <cstddef>
+#include <cstdio>
+
 /**
- * ビットの状況を出力
- * @param[out]	file	出力先ファイル
- * @param[in]	bits	処理対象の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
+ * 符号なし整数のビット1の数を算出
+ * @param[in]	value	算出対象の符号なし整数
+ * @return	ビット1の数
+ */
+template<typename TYPE>
+size_t
+count_bit(TYPE value)
+{
+	value = ((0xAAAAAAAAAAAAAAAA & (bo_uint)value) >> 1) + ((0x5555555555555555) & (bo_uint)value);
+	value = ((0xCCCCCCCCCCCCCCCC & (bo_uint)value) >> 2) + ((0x3333333333333333) & (bo_uint)value);
+	value = ((0xF0F0F0F0F0F0F0F0 & (bo_uint)value) >> 4) + ((0x0F0F0F0F0F0F0F0F) & (bo_uint)value);
+	value = ((0xFF00FF00FF00FF00 & (bo_uint)value) >> 8) + ((0x00FF00FF00FF00FF) & (bo_uint)value);
+	value = ((0xFFFF0000FFFF0000 & (bo_uint)value) >> 16) + ((0x0000FFFF0000FFFF) & (bo_uint)value);
+	return ((0xFFFFFFFF00000000 & (bo_uint)value) >> 32) + ((0x00000000FFFFFFFF) & (bo_uint)value);
+}
+
+/**
+ * 符号なし整数のビットの状態を出力
+ * @param[out]	file	出力先
+ * @param[in]	vaue	符号なし整数
+ * @param[in]	prefix	行頭に付与する文字列 (0なら何も出力しない)
+ * @note	little endian用の実装であることに注意。
  */
 template<typename TYPE>
 void
 print_bits(FILE* file,
-		   TYPE bits)
+		   const TYPE value,
+		   const char* prefx = 0)
 {
-	size_t h, k;
-	int c;
+	assert(file);
+
+	if (prefx) std::fprintf(file, "%s ", prefx);
 
 	for (size_t i(0); i < sizeof(TYPE); ++i) {
-		if (0 < i) std::fputc((int)' ', file);
-#ifdef	__LITTLE_ENDIAN__
-		h = sizeof(TYPE) - i - 1;
-#else	// __LITTLE_ENDIAN__
-		h = i;
-#endif	// __LITTLE_ENDIAN__
+		size_t h = sizeof(TYPE) - i - 1;	// for little endian
 		for (size_t j(0); j < 8; ++j) {
-			k = 8 - j - 1;
-			c = (int)'0';
-			if (bits & ((TYPE)1 << (h * 8 + k))) c = (int)'1';
-			std::fputc(c, file);
+			size_t k = 8 - j - 1;
+			if (value & ((bo_uint)1 << ((8 * h) + k))) std::printf("1");
+			else std::printf("0");
 		}
+		std::fprintf(file, " ");
 	}
 
-	std::fprintf(file, " [0x%lX]\n", (size_t)bits);
-}
-
-/**
- * 指定位置のビットを取得
- * @param[in]	bits	処理対象の整数
- * @param[in]	i	位置
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-TYPE
-get_bit(TYPE bits,
-		size_t i)
-{
-	assert(i < sizeof(TYPE) * 8);
-
-	return bits & ((TYPE)1 << i);
-}
-
-/**
- * 指定位置のビットを @a 1 にする
- * @param[in]	bits	処理対象の整数
- * @param[in]	i	位置
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-TYPE
-set_bit(TYPE bits,
-		size_t i)
-{
-	assert(i < sizeof(TYPE) * 8);
-
-	return bits | ((TYPE)1 << i);
-}
-
-/**
- * 指定位置のビットを @a 0 にする
- * @param[in]	bits	処理対象の整数
- * @param[in]	i	位置
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-TYPE
-clear_bit(TYPE bits,
-		  size_t i)
-{
-	assert(i < sizeof(TYPE) * 8);
-
-	return bits & ~((TYPE)1 << i);
-}
-
-/**
- * 指定位置以上の全ビットを @a 0 にする
- * @param[in]	bits	処理対象の整数
- * @param[in]	i	位置
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-TYPE
-clear_high_bits(TYPE bits,
-				size_t i)
-{
-	assert(i < sizeof(TYPE) * 8);
-
-	return bits & (((TYPE)1 << i) - 1);
-}
-
-/**
- * 指定位置以下の全ビットを @a 0 にする
- * @param[in]	bits	処理対象の整数
- * @param[in]	i	位置
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-TYPE
-clear_low_bits(TYPE bits,
-			   size_t i)
-{
-	assert(i < sizeof(TYPE) * 8);
-
-	return bits & (~(TYPE)0 << (i + 1));
-}
-
-/**
- * 最も低い桁の @a 1 のビットを取得
- * @param[in]	bits	処理対象の整数
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-TYPE
-get_lowest_bit(TYPE bits)
-{
-	size_t v = (size_t)bits;
-
-	return (TYPE)v & (~(TYPE)v + 1);
-}
-
-/**
- * 最も高い桁の @a 1 のビットを取得
- * @param[in]	bits	処理対象の整数
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-TYPE
-get_highest_bit(TYPE bits)
-{
-	bo_uint v = (bo_uint)bits;
-
-	v = ((bo_uint)0xFFFFFFFF00000000 & v) ? ((bo_uint)0xFFFFFFFF00000000 & v) : v;
-	v = ((bo_uint)0xFFFF0000FFFF0000 & v) ? ((bo_uint)0xFFFF0000FFFF0000 & v) : v;
-	v = ((bo_uint)0xFF00FF00FF00FF00 & v) ? ((bo_uint)0xFF00FF00FF00FF00 & v) : v;
-	v = ((bo_uint)0xF0F0F0F0F0F0F0F0 & v) ? ((bo_uint)0xF0F0F0F0F0F0F0F0 & v) : v;
-	v = ((bo_uint)0xCCCCCCCCCCCCCCCC & v) ? ((bo_uint)0xCCCCCCCCCCCCCCCC & v) : v;
-	v = ((bo_uint)0xAAAAAAAAAAAAAAAA & v) ? ((bo_uint)0xAAAAAAAAAAAAAAAA & v) : v;
-
-	return (TYPE)v;
-}
-
-/**
- * ビットのうち @a 1 になっているものの総数を算出
- * @param[in]	bits	処理対象の整数
- * @return	処理後の整数
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- */
-template<typename TYPE>
-size_t
-count_bits(TYPE bits)
-{
-	bo_uint v = (bo_uint)bits;
-
-	v = (((bo_uint)0xAAAAAAAAAAAAAAAA & v) >> 1) + ((bo_uint)0x5555555555555555 & v);
-	v = (((bo_uint)0xCCCCCCCCCCCCCCCC & v) >> 2) + ((bo_uint)0x3333333333333333 & v);
-	v = (((bo_uint)0xF0F0F0F0F0F0F0F0 & v) >> 4) + ((bo_uint)0x0F0F0F0F0F0F0F0F & v);
-	v = (((bo_uint)0xFF00FF00FF00FF00 & v) >> 8) + ((bo_uint)0x00FF00FF00FF00FF & v);
-	v = (((bo_uint)0xFFFF0000FFFF0000 & v) >> 16) + ((bo_uint)0x0000FFFF0000FFFF & v);
-	v = (((bo_uint)0xFFFFFFFF00000000 & v) >> 32) + ((bo_uint)0x00000000FFFFFFFF & v);
-
-	return (size_t)v;
-}
-
-/**
- * ビットのうち @a 1 になっているものの総数が等しい次に大きな整数を算出
- * @param[in]	bits	処理対象の整数
- * @return	次に大きな整数を算出
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- * @todo	もっと良い方法を考えること。
- */
-template<typename TYPE>
-TYPE
-next_same_bit_counts(TYPE bits)
-{
-//	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
-//		if (!(bits & ((TYPE)1 << i))) continue;
-//		if (bits & ((TYPE)1 << i + 1)) continue;
-//		bits &= ~((TYPE)1 << i);
-//		bits |= (TYPE)1 << i + 1;
-//		size_t j = count_bits<TYPE>(bits & (((TYPE)1 << i) - 1));
-//		bits &= ~(TYPE)0 << i;
-//		bits |= ~(~(TYPE)0 << j);
-//		return bits;
-//	}
-
-	bool t;
-	size_t c[2] = {0, 0};
-	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
-		t = (bool)(bits & ((TYPE)1 << i));
-		if (!t || (bits & ((TYPE)1 << i + 1))) {
-			c[(size_t)t]++;
-			continue;
-		}
-		return bits + ((TYPE)1 << c[0]) + ((TYPE)1 << c[1]) - 1;
-	}
-
-	return bits;
-}
-
-/**
- * ビットのうち @a 1 になっているものの総数が等しい次に小さな整数を算出
- * @param[in]	bits	処理対象の整数
- * @return	次に小さな整数を算出
- * @note	テンプレートの型 @a TYPE は @a int 以上の幅の符号なし整数。
- * @todo	もっと良い方法を考えること。
- */
-template<typename TYPE>
-TYPE
-previous_same_bit_counts(TYPE bits)
-{
-//	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
-//		if (bits & ((TYPE)1 << i)) continue;
-//		if (!(bits & ((TYPE)1 << i + 1))) continue;
-//		bits |= (TYPE)1 << i;
-//		bits &= ~((TYPE)1 << i + 1);
-//		size_t j = count_bits<TYPE>(bits & (((TYPE)1 << i) - 1));
-//		bits |= ~(~(TYPE)0 << i);
-//		bits &= ~(TYPE)0 << i - j;
-//		return bits;
-//	}
-
-	bool t;
-	size_t c[2] = {0, 0};
-	for (size_t i(0); i < sizeof(TYPE) * 8 - 1; ++i) {
-		t = (bool)(bits & ((TYPE)1 << i));
-		if (t || !(bits & ((TYPE)1 << i + 1))) {
-			c[(size_t)t]++;
-			continue;
-		}
-		return bits - ((TYPE)1 << c[1]) - ((TYPE)1 << c[0]) + 1;
-	}
-
-	return bits;
+	std::fprintf(file, "[0x%llX]\n", (bo_uint)value);
 }
 
 #endif	// __BITS_OPERATION_HPP__
