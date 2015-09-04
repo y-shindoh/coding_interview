@@ -6,6 +6,12 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  加算演算子だけを用い、
+  整数値の乗算・減算・除算を行うメソッドを実装してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
