@@ -44,9 +44,9 @@ int main()
 	// 基数ソート (昇順)
 	// ※ 入力データのビット幅を定数と考えれば、計算量は O(m)。
 	for (size_t i(0); i < sizeof(int) * 8; ++i) {
+		if (!(max & (~0 << i))) break;	// これ以上は変化なし。
 		h = i % 2;
 		k = (h + 1) % 2;
-		if (!(max & (~0 << i))) break;	// これ以上は変化なし。
 		for (size_t j(0); j < 2; ++j) {
 			while (!queue[h][j].empty()) {
 				x = queue[h][j].front();
@@ -68,12 +68,12 @@ int main()
 		for (size_t j(0); j < 2; ++j) {
 			while (!queue[i][j].empty()) {
 				h = queue[i][j].front();
-				queue[i][j].pop_front();
 				if ((data[h] & 1) == x) {
 					x = 2;
 					break;
 				}
 				x = data[h] & 1;
+				queue[i][j].pop_front();
 			}
 		}
 	}
