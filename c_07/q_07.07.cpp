@@ -69,7 +69,7 @@ find_kth_composition_2(const TYPE* factors,
 	std::set<TYPE> post;
 
 	queue.resize(lenght);
-	queue[0].push(1);
+	queue[0].push((TYPE)1);
 
 	TYPE x, y;
 	size_t h;
