@@ -6,6 +6,12 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  素因数が3, 5, 7だけの整数値で、
+  k番目に小さいものを見つけるアルゴリズムを設計してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
@@ -13,38 +19,32 @@
 #include <vector>
 
 /**
- * 3^h * 5^i * 7^j で表現できる数のうちk番目に小さいものを算出 (h, i, j, kは自然数)
- * @param[in]	k	位置 (自然数)
- * @return	該当する自然数
- * @note	テンプレートの型 @a TYPE は符号なし整数を指定すること。
- * @note	計算量は O(k log k) となる。
+ * 与えた因数から生成される合成数のうちk番目に小さいものを算出
+ * @param[in]	factors	因数
+ * @param[in]	lenght	引数 @a factors の要素数
+ * @param[in]	k	昇順におけるインデックス (0始まり)
+ * @return	k番目に小さい合成数
  */
 template<typename TYPE>
 TYPE
-find_kth_number(TYPE k)
+find_kth_composition(const TYPE* factors,
+					 size_t lenght,
+					 size_t k)
 {
-	std::priority_queue<TYPE, std::vector<TYPE>, std::greater<TYPE> > queue;
+	std::priority_queue< TYPE, std::vector<TYPE>, std::greater<TYPE> > queue;
 	TYPE value;
-	TYPE previous(0);
 
 	queue.push((TYPE)1);
 
-	for (TYPE i(0); ; ++i) {
-		assert(!queue.empty());
+	for (size_t i(0); i <= k; ++i) {	// インデックスに注意
 		value = queue.top();
-		queue.pop();
-		if (value == previous) {
-			--i;
-			continue;	// 重複は除去 (重複は2k以下しか出現しない)
+		for (size_t j(0); j < lenght; ++j) {
+			queue.push(value * factors[j]);
 		}
-		if (k <= i) break;
-		previous = value;
-		queue.push((TYPE)3 * value);
-		queue.push((TYPE)5 * value);
-		queue.push((TYPE)7 * value);
+		while (value >= queue.top()) queue.pop();	// 重複を除去
 	}
 
-	return value;
+	return queue.top();
 }
 
 /**
@@ -52,8 +52,11 @@ find_kth_number(TYPE k)
  */
 int main()
 {
-	for (unsigned int i(7); i <= 9; ++i) {
-		unsigned int n = find_kth_number<unsigned int>(i);
+	const unsigned int factors[] = {3, 5, 7};
+	unsigned int n;
+
+	for (unsigned int i(0); i < 9; ++i) {
+		n = find_kth_composition<unsigned int>(factors, sizeof(factors) / sizeof(factors[0]), i);
 		printf("[%u] %u\n", i, n);
 	}
 
