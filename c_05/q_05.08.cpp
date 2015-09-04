@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 
 /**
  * スクリーンに水平の直線を引く
@@ -35,6 +36,10 @@ draw_horizontal_line(char screen[H][W/8],
 					 size_t x2,
 					 size_t y)
 {
+	assert(x1 < W);
+	assert(x2 < W);
+	assert(y < H);
+
 	bool flag(false);
 
 	size_t x11 = x1 / 8;
