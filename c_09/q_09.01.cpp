@@ -31,8 +31,10 @@ find_step_sequence(TYPE length,
 				   TYPE step)
 {
 	std::vector<TYPE> buffer;
-	buffer.resize((size_t)(step + 1));
-	buffer[0] = (TYPE)1;
+	buffer.push_back((TYPE)1);
+	for (size_t i(0); i < (size_t)step; ++i) {
+		buffer.push_back((TYPE)0);
+	}
 
 	size_t h, k;
 
