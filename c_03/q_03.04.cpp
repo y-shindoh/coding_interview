@@ -100,8 +100,7 @@ public:
 			count_ = 0;
 
 			for (int i(0); i < 3; ++i) {
-				towers_[i].resize(n);
-				towers_[i].clear();
+				towers_[i].reserve(n);
 			}
 
 			int j;
