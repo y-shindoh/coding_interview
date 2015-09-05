@@ -36,8 +36,8 @@
  */
 template<typename TYPE>
 TYPE
-count_route(TYPE width,
-			TYPE hight,
+count_route(size_t width,
+			size_t hight,
 			const std::vector< std::set<size_t> >& rules)
 {
 	assert(0 < width);
@@ -49,7 +49,7 @@ count_route(TYPE width,
 	// 算出領域の初期化
 	for (size_t i(0); i < 2; ++i) {
 		buffer[i].resize(width);
-		std::memset((void*)&buffer[i][0], 0, sizeof(TYPE) * (size_t)width);
+		std::memset((void*)&buffer[i][0], 0, sizeof(TYPE) * width);
 	}
 	buffer[1][0] = (TYPE)1;
 
@@ -62,7 +62,7 @@ count_route(TYPE width,
 			if (0 < j) buffer[k][j] += buffer[k][j-1];
 			if (rules[i].find(j) != rules[i].end()) buffer[k][j] = 0;
 		}
-		std::memset((void*)&buffer[h][0], 0, sizeof(TYPE) * (size_t)width);
+		std::memset((void*)&buffer[h][0], 0, sizeof(TYPE) * width);
 	}
 
 	h = (hight - 1) % 2;
