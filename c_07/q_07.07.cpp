@@ -37,7 +37,7 @@ find_kth_composition_1(const TYPE* factors,
 
 	queue.push((TYPE)1);
 
-	for (size_t i(0); i <= k; ++i) {	// インデックスに注意
+	for (size_t i(0); i < k; ++i) {
 		x = queue.top();
 		for (size_t j(0); j < lenght; ++j) {
 			y = x * factors[j];
@@ -82,7 +82,7 @@ find_kth_composition_2(const TYPE* factors,
 			x = queue[j].front();
 			h = j;
 		}
-		if (k < i) break;	// インデックスに注意
+		if (k <= i) break;
 		queue[h].pop();
 		// 次の値の格納
 		for (size_t j(0); j < lenght; ++j) {
@@ -101,17 +101,17 @@ find_kth_composition_2(const TYPE* factors,
  */
 int main()
 {
-	const unsigned int factors[] = {3, 5, 7};
-	unsigned int n;
+	const size_t factors[] = {3, 5, 7};
+	size_t n;
 
-	for (unsigned int i(0); i < 9; ++i) {
-		n = find_kth_composition_1<unsigned int>(factors, sizeof(factors) / sizeof(factors[0]), i);
-		printf("[%u] %u\n", i, n);
+	for (size_t i(0); i < 10; ++i) {
+		n = find_kth_composition_1<size_t>(factors, sizeof(factors) / sizeof(factors[0]), i);
+		printf("[%lu] %lu\n", i, n);
 	}
 
-	for (unsigned int i(0); i < 9; ++i) {
-		n = find_kth_composition_2<unsigned int>(factors, sizeof(factors) / sizeof(factors[0]), i);
-		printf("[%u] %u\n", i, n);
+	for (size_t i(0); i < 10; ++i) {
+		n = find_kth_composition_2<size_t>(factors, sizeof(factors) / sizeof(factors[0]), i);
+		printf("[%lu] %lu\n", i, n);
 	}
 
 	return 0;
