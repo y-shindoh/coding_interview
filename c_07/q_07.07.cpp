@@ -33,6 +33,7 @@ find_kth_composition_1(const TYPE* factors,
 					   size_t k)
 {
 	assert(factors);
+	assert(0 < lenght);
 
 	std::priority_queue< TYPE, std::vector<TYPE>, std::greater<TYPE> > queue;
 	std::set<TYPE> post;
