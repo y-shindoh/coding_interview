@@ -22,6 +22,7 @@
 #include <cstring>
 #include <cassert>
 #include <vector>
+#include <set>
 
 /**
  * 指定の大きさの平面における原点から対角への移動方法の総数を算出
@@ -29,12 +30,15 @@
  * @param[in]	hight	平面の高さ
  * @param[in]	rules	移動禁止箇所
  * @note	計算量は O(width * hight)。
+			ただし std::set::find<f> の計算量を O(1) とした場合に限る。
+ * @note	メモリ占有量は O(width)。
+ * @note	テンプレートの型 @a TYPE は符号なし整数を適用すること。
  */
 template<typename TYPE>
 TYPE
 count_route(TYPE width,
 			TYPE hight,
-			const std::vector< std::vector<bool> >& rules)
+			const std::vector< std::set<size_t> >& rules)
 {
 	assert(0 < width);
 	assert(0 < hight);
@@ -56,7 +60,7 @@ count_route(TYPE width,
 		for (size_t j(0); j < width; ++j) {
 			buffer[k][j] += buffer[h][j];
 			if (0 < j) buffer[k][j] += buffer[k][j-1];
-			if (rules[i][j]) buffer[k][j] = 0;
+			if (rules[i].find(j) != rules[i].end()) buffer[k][j] = 0;
 		}
 		std::memset((void*)&buffer[h][0], 0, sizeof(TYPE) * (size_t)width);
 	}
@@ -72,16 +76,10 @@ count_route(TYPE width,
 int main()
 {
 	size_t n;
-	std::vector< std::vector<bool> > rules;
+	std::vector< std::set<size_t> > rules;
 
 	rules.resize(5);
-	for (size_t i(0); i < 5; ++i) {
-		rules[i].reserve(5);
-		for (size_t j(0); j < 5; ++j) {
-			rules[i].push_back(false);
-		}
-	}
-	rules[1][1] = true;	// 立入禁止
+	rules[1].insert(1);	// 立入禁止
 
 	for (size_t i(1); i < 5; ++i) {
 		n = count_route<size_t>(i, i, rules);
