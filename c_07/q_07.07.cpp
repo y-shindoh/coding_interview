@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <cassert>
 #include <queue>
 #include <vector>
 #include <set>
@@ -31,6 +32,8 @@ find_kth_composition_1(const TYPE* factors,
 					   size_t lenght,
 					   size_t k)
 {
+	assert(factors);
+
 	std::priority_queue< TYPE, std::vector<TYPE>, std::greater<TYPE> > queue;
 	std::set<TYPE> post;
 	TYPE x, y;
@@ -65,6 +68,9 @@ find_kth_composition_2(const TYPE* factors,
 					   size_t lenght,
 					   size_t k)
 {
+	assert(factors);
+	assert(0 < lenght);
+
 	std::vector< std::queue<TYPE> > queue;
 	std::set<TYPE> post;
 
