@@ -6,80 +6,62 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  子供がn段の階段を駆け上がりますが、一歩で1段、2段、もしくは3段を登ることができます。
+  このとき、考え得る階段の上がり方が何通りあるかを求めるメソッドを実装してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
 #include <vector>
 
-#ifndef	NOT_USE_DP
 /**
- * n段の階段を一歩で1〜N段ずつ登る場合の登り方の数 (DPを用いた実装)
- * @param[in]	n	階段の段数
- * @param[in]	s	一歩で登れる段数
- * return	登り方の数
- * @note	テンプレートの型 @a TYPE は符号なし整数を指定すること。
+ * 階段の登り方が何種類あるかを算出
+ * @param[in]	length	階段の合計段数
+ * @param[in]	step	一歩で登ることのできる最大段数
+ * @return	階段の登り方の種類
+ * @note	動的計画法を用いて O(length * step) の計算量に抑制。
+ * @note	メモリ占有量は O(step)。
  */
 template<typename TYPE>
 TYPE
-find_step_sequence(size_t n,
-				   size_t s)
+find_step_sequence(TYPE length,
+				   TYPE step)
 {
-	assert(n);
-	assert(s);
+	std::vector<TYPE> buffer;
+	buffer.resize((size_t)(step + 1));
+	buffer[0] = (TYPE)1;
 
-	std::vector<TYPE> count;
-	count.resize(n + 1, (TYPE)0);
-	count[0] = 1;
+	size_t h, k;
 
-	for (size_t i(0); i < n; ++i) {
-		for (size_t j(1); j <= s; ++j) {
-			if (n < i + j) break;
-			count[i+j] += count[i];
+	for (size_t i(0); i < (size_t)length; ++i) {
+		h = i % ((size_t)(step + 1));
+		for (size_t j(1); j <= (size_t)step; ++j) {
+			k = (h + j) % ((size_t)(step + 1));
+			buffer[k] += buffer[h];
 		}
+		buffer[h] = 0;
 	}
 
-	return count.back();
+	h = length % ((size_t)(step + 1));
+
+	return buffer[h];
 }
-#else	// NOT_USE_DP
-/**
- * n段の階段を一歩で1〜N段ずつ登る場合の登り方の数 (単純な再帰関数の実装)
- * @param[in]	n	階段の段数
- * @param[in]	s	一歩で登れる段数
- * return	登り方の数
- * @note	テンプレートの型 @a TYPE は符号なし整数を指定すること。
- */
-template<typename TYPE>
-TYPE
-find_step_sequence(size_t n,
-				   size_t s)
-{
-	assert(n);
-	assert(s);
-
-	TYPE c(0);
-
-	for (size_t i(1); i <= s; ++i) {
-		if (n <= i) {
-			if (n == i) ++c;
-			break;
-		}
-		c += find_step_sequence<TYPE>(n - i, s);
-	}
-
-	return c;
-}
-#endif	// NOT_USE_DP
 
 /**
  * 動作確認用コマンド
  */
 int main()
 {
-	size_t n(50);
+	size_t n;
 	size_t s(3);
 
-	unsigned int c = find_step_sequence<unsigned int>(n, s);
-	std::printf("%lu / 1-%lu => %u\n", n , s, c);
+	for (size_t i(1); i <= 10; ++i) {
+		n = find_step_sequence<size_t>(i, s);
+		std::printf("%lu / 1-%lu => %lu\n", i, s, n);
+	}
 
 	return 0;
 }
