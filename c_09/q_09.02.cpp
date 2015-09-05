@@ -6,93 +6,87 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  XY平面上の左上にロボットが座っています。
+  ロボットは右と下の2つの方向にしか進むことができません。
+  (0, 0) から (X, Y) まで移動するには何通りの進み方がありますか?
+
+  発展問題
+  ロボットが通ることのできない「立ち入り禁止」の地点があるとした場合、
+  左上の地点から右下の地点まで移動する道順を見つけるアルゴリズムを設計してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <cassert>
+#include <vector>
 
 /**
- * @class	FindRoute
- * @brief	平面座標の(0, 0)から(W, H)に移動するパターンの総数を算出
- * @note	上か右にしか移動できない前提。
- * @note	テンプレートの型 @a TYPE は総数算出に用いる符号なし整数の型。
- * @note	テンプレートの整数 @a H , @a W は移動先の座標を示す。
- * @note	処理速度を無視すれば、フィールド @a counts_ は2行でも処理できる。
+ * 指定の大きさの平面における原点から対角への移動方法の総数を算出
+ * @param[in]	width	平面の幅
+ * @param[in]	hight	平面の高さ
+ * @param[in]	rules	移動禁止箇所
+ * @note	計算量は O(width * hight)。
  */
-template<typename TYPE, size_t H, size_t W>
-class FindRoute
+template<typename TYPE>
+TYPE
+count_route(TYPE width,
+			TYPE hight,
+			const std::vector< std::vector<bool> >& rules)
 {
-private:
+	assert(0 < width);
+	assert(0 < hight);
 
-	TYPE counts_[H+1][W+1];		///< パターン数の算出テーブル (DP処理)
-	bool obstacles_[H+1][W+1];	///< 移動できない座標
-	bool done_;	///< 算出処理完了済みフラグ
+	std::vector<TYPE> buffer[2];
+	size_t h, k;
 
-public:
+	// 算出領域の初期化
+	for (size_t i(0); i < 2; ++i) {
+		buffer[i].resize(width);
+		std::memset((void*)&buffer[i][0], 0, sizeof(TYPE) * (size_t)width);
+	}
+	buffer[1][0] = (TYPE)1;
 
-	/**
-	 * パターンの総数算出の準備
-	 */
-	void
-	prepare()
-		{
-			std::memset((void*)counts_, 0, sizeof(counts_));
-			std::memset((void*)obstacles_, 0, sizeof(obstacles_));
-			done_ = false;
+	// 総数の算出
+	for (size_t i(0); i < hight; ++i) {
+		h = (i + 1) % 2;
+		k = i % 2;
+		for (size_t j(0); j < width; ++j) {
+			buffer[k][j] += buffer[h][j];
+			if (0 < j) buffer[k][j] += buffer[k][j-1];
+			if (rules[i][j]) buffer[k][j] = 0;
 		}
+		std::memset((void*)&buffer[h][0], 0, sizeof(TYPE) * (size_t)width);
+	}
 
-	/**
-	 * 移動できない座標を設定
-	 * @param[in]	i	座標のyの値
-	 * @param[in]	j	座標のxの値
-	 * @note	メソッド @a prepare の後に実施する。
-	 * @note	メソッド @a calculate の前に実施する。
-	 * @note	本メソッドは複数回実行可能。
-	 */
-	void
-	set_obstacle(size_t i,
-				 size_t j)
-		{
-			obstacles_[i][j] = true;
-		}
+	h = (hight - 1) % 2;
 
-	/**
-	 * パターンの総数算出
-	 * @return	パターンの総数
-	 * @note	DP処理により実装。
-	 */
-	TYPE
-	calculate()
-		{
-			if (!done_) {
-				if (!obstacles_[0][0]) counts_[0][0] = (TYPE)1;
-
-				for (size_t i(0); i <= H; ++i) {
-					for (size_t j(0); j <= W; ++j) {
-						if (obstacles_[i][j]) continue;
-						if (i < H) counts_[i+1][j] += counts_[i][j];
-						if (j < W) counts_[i][j+1] += counts_[i][j];
-					}
-				}
-
-				done_ = true;
-			}
-
-			return counts_[H][W];
-		}
-};
+	return buffer[h][width-1];
+}
 
 /**
  * 動作確認用コマンド
  */
 int main()
 {
-	FindRoute<unsigned int, 10, 10> finder;
+	size_t n;
+	std::vector< std::vector<bool> > rules;
 
-	finder.prepare();
-	unsigned int n = finder.calculate();
+	rules.resize(5);
+	for (size_t i(0); i < 5; ++i) {
+		rules[i].reserve(5);
+		for (size_t j(0); j < 5; ++j) {
+			rules[i].push_back(false);
+		}
+	}
+	rules[1][1] = true;	// 立入禁止
 
-	std::printf("%u\n", n);
+	for (size_t i(1); i < 5; ++i) {
+		n = count_route<size_t>(i, i, rules);
+		std::printf("%lu => %lu\n", i, n);
+	}
 
 	return 0;
 }
