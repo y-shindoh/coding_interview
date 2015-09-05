@@ -27,27 +27,27 @@
  */
 template<typename TYPE>
 TYPE
-find_step_sequence(TYPE length,
-				   TYPE step)
+find_step_sequence(size_t length,
+				   size_t step)
 {
 	std::vector<TYPE> buffer;
 	buffer.push_back((TYPE)1);
-	for (size_t i(0); i < (size_t)step; ++i) {
+	for (size_t i(0); i < step; ++i) {
 		buffer.push_back((TYPE)0);
 	}
 
 	size_t h, k;
 
-	for (size_t i(0); i < (size_t)length; ++i) {
-		h = i % ((size_t)(step + 1));
-		for (size_t j(1); j <= (size_t)step; ++j) {
-			k = (h + j) % ((size_t)(step + 1));
+	for (size_t i(0); i < length; ++i) {
+		h = i % (step + 1);
+		for (size_t j(1); j <= step; ++j) {
+			k = (h + j) % (step + 1);
 			buffer[k] += buffer[h];
 		}
 		buffer[h] = 0;
 	}
 
-	h = length % ((size_t)(step + 1));
+	h = length % (step + 1);
 
 	return buffer[h];
 }
