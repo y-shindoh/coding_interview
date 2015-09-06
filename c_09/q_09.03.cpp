@@ -70,14 +70,12 @@ int main()
 	int h;
 
 	for (size_t i(0); i < sizeof(a) / sizeof(a[0]); ++i) {
-		std::printf("<%lu>\n", i);
-		// 1st
 		h = search_magic_index<int>(a[i], sizeof(a[0]) / sizeof(a[0][0]));
 		if (0 <= h) {
-			std::printf("1:\ta[%d] = %d\n", a[i][h], h);
+			std::printf("%lu:\ta[%d] = %d\n", i, a[i][h], h);
 		}
 		else {
-			std::printf("1:\tnot found!\n");
+			std::printf("%lu:\tnot found!\n", i);
 		}
 	}
 
