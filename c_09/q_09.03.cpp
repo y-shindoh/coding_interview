@@ -6,65 +6,55 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  ある配列 A[0...n-1] について A[i] = i となるインデックスiをマジックインデックスとします。
+  異なる整数で昇順にソートされた配列が与えられたとき、
+  マジックインデックスが存在するとすれば、それを探し出すメソッドを書いてください。
+
+  発展問題:
+  配列の値が異なる整数でない場合はどのようにすればよいですか?
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
 
 /**
- * 配列の要素値と等しくなるインデックスを探索
- * @param[in]	array	昇順ソート済み配列
- * @param[in]	length	配列長
- * @return	0以上: 該当インデックス, 負の数: 見つからなかった
- * @note	最悪計算量はΘ(n)だが、配列中に重複があっても正常に動作する。
+ * マジック・インデックスを探索
+ * @param[in]	array	探索対象の配列 (重複する値を持たないこと)
+ * @param[in]	length	引数 @a array の要素数
+ * @return	マジック・インデックス (探索失敗時は負の数値が返る)
+ * @note	最悪計算量は O(log length)。
+ * @note	重複する値を持つ配列に対しては、最悪計算量 O(length) の探索しかない。
+			つまり線形探索と同程度の最悪計算量のアルゴリズムしか適用できない。
+ * @note	テンプレートの型 @a TYPE には符号あり整数を与えること。
  */
 template<typename TYPE>
-int
-search1(const TYPE* array,
-		int length)
+TYPE
+search_magic_index(const TYPE* array,
+				   size_t length)
 {
 	assert(array);
-	assert(length);
 
-	for (TYPE i(0); i < (TYPE)length; ++i) {
-		if (array[i] == (TYPE)i) return i;
-	}
+	TYPE s(0);
+	TYPE e((TYPE)length - 1);
+	TYPE i;
 
-	return -1;
-}
-
-/**
- * 配列の要素値と等しくなるインデックスを探索
- * @param[in]	array	昇順ソート済み配列 (重複なし)
- * @param[in]	length	配列長
- * @return	0以上: 該当インデックス, 負の数: 見つからなかった
- * @note	最悪計算量はΘ(log n)だが、配列中に重複があると正常に動作しない。
- */
-template<typename TYPE>
-int
-search2(const TYPE* array,
-		int length)
-{
-	assert(array);
-	assert(length);
-
-	int s(0);
-	int e(length - 1);
-
-	if ((TYPE)s < array[s]) return -1;
-	if (array[e] < (TYPE)e) return -1;
-
-	int i = length / 2;
-
-	while (array[i] != (TYPE)i) {
-		if (array[i] < (TYPE)i) s = i + 1;
-		else e = i - 1;
-		if (e < s) break;
+	while (s <= e) {
 		i = (s + e) / 2;
+		if (array[i] < i) {
+			s = i + 1;
+		}
+		else if (i < array[i]) {
+			e = i - 1;
+		}
+		else {
+			return i;
+		}
 	}
 
-	if (array[i] != (TYPE)i) return -1;
-
-	return i;
+	return (TYPE)-1;
 }
 
 /**
@@ -75,28 +65,19 @@ int main()
 	int a[][9] = {{-5, -4, -3, -2, 0, 4, 5, 7, 9},
 				  {-5, -4, -3, -1, 0, 1, 2, 3, 4},
 				  {5, 6, 7, 8, 9, 10, 11, 12, 13},
-				  {-5, -5, -3, -2, 0, 4, 5, 8, 8},
-				  {-1, -1, -1, -1, -1, 7, 7, 7, 7},
-				  {7, 7, 7, 7, 7, 7, 7, 8, 8}};
+				  {0, 2, 4, 6, 8, 10, 12, 13, 14},
+				  {-8, -6, -4, -2, 0, 2, 4, 6, 8}};
 	int h;
 
 	for (size_t i(0); i < sizeof(a) / sizeof(a[0]); ++i) {
 		std::printf("<%lu>\n", i);
 		// 1st
-		h = search1(a[i], sizeof(a[0]) / sizeof(a[0][0]));
+		h = search_magic_index<int>(a[i], sizeof(a[0]) / sizeof(a[0][0]));
 		if (0 <= h) {
 			std::printf("1:\ta[%d] = %d\n", a[i][h], h);
 		}
 		else {
 			std::printf("1:\tnot found!\n");
-		}
-		// 2nd (重複ありに非対応)
-		h = search2(a[i], sizeof(a[0]) / sizeof(a[0][0]));
-		if (0 <= h) {
-			std::printf("2:\ta[%d] = %d\n", a[i][h], h);
-		}
-		else {
-			std::printf("2:\tnot found!\n");
 		}
 	}
 
