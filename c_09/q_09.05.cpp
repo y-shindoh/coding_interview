@@ -6,6 +6,11 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  ある文字列の、すべての順列を返すメソッドを書いてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -14,102 +19,79 @@
 #include <string>
 
 /**
- * 文字列の全ての順列を生成
- * @note	対象はUS-ASCIIのみとする。
+ * 文字列の全ての順列を生成 (補助関数)
  */
-class PermutationMaker
+void
+make_permutational_strings(const std::string& input,
+						   char* buffer,
+						   bool* flags,
+						   size_t i,
+						   std::vector<std::string>& strings)
 {
-private:
+	assert(buffer);
+	assert(flags);
 
-	std::vector<char> flags_;			///< 使用状況フラグ
-	std::vector<std::string>* storage_;	///< 順列の集合 (返却値)
+	if (input.length() <= i) {
+		strings.push_back(std::string(buffer));
+		return;
+	}
 
-	size_t length_;						///< 文字列長
-	const char* input_;					///< 入力文字列
-	char* output_;						///< 作業領域
+	for (size_t j(0); input[j]; ++j) {
+		if (flags[j]) continue;
+		buffer[i] = input[j];
+		flags[j] = true;
+		make_permutational_strings(input, buffer, flags, i+1, strings);
+		flags[j] = false;
+	}
+}
 
-	/**
-	 * メソッド @a execute の再帰処理部分
-	 * @param[in]	i	文字の追加位置
-	 */
-	void
-	execute_routine(size_t i)
-		{
-			if (length_ <= i) {
-				storage_->push_back(std::string(output_));
-				return;
-			}
+/**
+ * 文字列の全ての順列を生成
+ * @param[in]	input	基礎となる文字列
+ * @param[out]	strings	全ての順列 (生成失敗時は何も追加しない)
+ * @note	US-ASCIIのみを処理対象とする。
+ * @note	計算量は O(2^n)。ただし n は文字列 @a input の長さ。
+ */
+void
+make_permutational_strings(const std::string& input,
+						   std::vector<std::string>& strings)
+{
+	char* buffer(0);
+	bool* flags(0);
 
-			for (size_t j(0); j < length_; ++j) {
-				if (flags_[j]) continue;
-				flags_[j] = (char)1;
-				output_[i] = input_[j];
-				execute_routine(i + 1);
-				flags_[j] = (char)0;
-			}
-		}
+	try {
+		buffer = new char[input.size()+1];
+		flags = new bool[input.size()];
+	}
+	catch (...) {
+		;
+	}
 
-public:
+	if (buffer && flags) {
+		buffer[input.size()] = '\0';
+		std::memset((void*)flags, 0, sizeof(bool) * input.size());
+		make_permutational_strings(input, buffer, flags, 0, strings);
+	}
 
-	/**
-	 * 文字列の全ての順列を生成
-	 * @param[in]	input	文字列
-	 * @param[in]	length	文字列 @a input の長さ
-	 * @return	全ての順列
-	 * @note	生成失敗時は @a 0 が返却される。
-	 * @note	返却値は本メソッド利用者の責任で削除すること。
-	 */
-	std::vector<std::string>*
-	execute(const char* input,
-			size_t length)
-		{
-			assert(input);
-			assert(length);
-
-			input_ = input;
-			length_ = length;
-			storage_ = 0;
-			output_ = 0;
-
-			try {
-				storage_ = new std::vector<std::string>();
-				output_ = new char[length+1];
-			}
-			catch (...) {
-				if (storage_) delete storage_;
-				if (output_) delete output_;
-				return 0;
-			}
-
-			flags_.clear();
-			flags_.resize(length, (char)0);
-			output_[length] = '\0';
-
-			execute_routine(0);
-
-			delete [] output_;
-
-			return storage_;
-		}
-};
+	if (buffer) delete [] buffer;
+	if (flags) delete [] flags;
+}
 
 /**
  * 動作確認用コマンド
  */
 int main()
 {
-	const char input[] = "Aa1";
-	const size_t length = std::strlen(input);
+	const std::string input("a0A");
+	std::vector<std::string> strings;
 
-	PermutationMaker maker;
-	std::vector<std::string>* permutation = maker.execute(input, length);
+	make_permutational_strings(input, strings);
 
-	size_t m = permutation->size();
-	for (size_t i(0); i < m; ++i) {
-		std::printf("[%lu] '%s'\n", i, permutation->at(i).c_str());
+	std::vector<std::string>::const_iterator it;
+
+	for (it = strings.begin(); it != strings.end(); ++it) {
+		std::printf("%s\n", it->c_str());
 	}
-
-	delete permutation;
 
 	return 0;
 }
