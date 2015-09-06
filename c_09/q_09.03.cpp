@@ -28,7 +28,6 @@
  * @note	最悪計算量は O(log length)。
  * @note	重複する値を持つ配列に対しては、最悪計算量 O(length) の探索しかない。
 			つまり線形探索と同程度の最悪計算量のアルゴリズムしか適用できない。
- * @note	テンプレートの型 @a TYPE には符号あり整数を与えること。
  */
 template<typename TYPE>
 TYPE
@@ -36,6 +35,7 @@ search_magic_index(const TYPE* array,
 				   size_t length)
 {
 	assert(array);
+	assert(0 < length);
 
 	TYPE s(0);
 	TYPE e((TYPE)length - 1);
@@ -47,6 +47,7 @@ search_magic_index(const TYPE* array,
 			s = i + 1;
 		}
 		else if (i < array[i]) {
+			if (i == 0) break;
 			e = i - 1;
 		}
 		else {
