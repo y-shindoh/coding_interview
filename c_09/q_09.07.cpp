@@ -6,6 +6,14 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  多くの画像編集プログラムに見られるような「塗りつぶし」機能を実装してください。
+  つまり、スクリーン (色の2次元配列で表現されたもの) と座標、
+  塗りつぶす色が与えられた時に、
+  その地点と同じ色で囲まれている領域をすべて塗りつぶす機能ということです。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
@@ -18,6 +26,7 @@
  * @param[in]	y	塗りつぶし始点のY座標
  * @param[in]	color	塗りつぶしで用いる色
  * @note	テンプレートの整数 @a H , @a W はそれぞれ画像の高さと幅。
+ * @note	最悪計算量は O(HW)。
  */
 template<size_t H, size_t W>
 void
@@ -26,42 +35,29 @@ fill_color(char canvas[H][W],
 		   size_t y,
 		   char color)
 {
-	const char original = canvas[y][x];	// 画像の配列は「高さ×幅」
+	std::deque< std::pair<size_t, size_t> > queue;
+	std::pair<size_t, size_t> pixel;
 
-	if (color == original) return;
+	queue.push_back(std::pair<size_t, size_t>(x, y));
 
-	std::deque<size_t> queue_x;
-	std::deque<size_t> queue_y;
-
-	queue_x.push_back(x);
-	queue_y.push_back(y);
-
-	while (!queue_x.empty()) {
-		x = queue_x.front();
-		y = queue_y.front();
-
-		if (canvas[y][x] == original) {	// 未処理のみ扱う
-			canvas[y][x] = color;
-			if (0 < x && canvas[y][x-1] == original) {
-				queue_x.push_back(x - 1);
-				queue_y.push_back(y);
-			}
-			if (0 < y && canvas[y-1][x] == original) {
-				queue_x.push_back(x);
-				queue_y.push_back(y - 1);
-			}
-			if (x < W && canvas[y][x+1] == original) {
-				queue_x.push_back(x + 1);
-				queue_y.push_back(y);
-			}
-			if (y < H && canvas[y+1][x] == original) {
-				queue_x.push_back(x);
-				queue_y.push_back(y + 1);
-			}
+	while (!queue.empty()) {
+		pixel = queue.front();
+		queue.pop_front();
+		x = pixel.first;
+		y = pixel.second;
+		if (0 < x && canvas[y][x] == canvas[y][x-1]) {
+			queue.push_back(std::pair<size_t, size_t>(x-1, y));
 		}
-
-		queue_x.pop_front();
-		queue_y.pop_front();
+		if (x + 1 < W && canvas[y][x] == canvas[y][x+1]) {
+			queue.push_back(std::pair<size_t, size_t>(x+1, y));
+		}
+		if (0 < y && canvas[y][x] == canvas[y-1][x]) {
+			queue.push_back(std::pair<size_t, size_t>(x, y-1));
+		}
+		if (y + 1 < H && canvas[y][x] == canvas[y+1][x]) {
+			queue.push_back(std::pair<size_t, size_t>(x, y+1));
+		}
+		canvas[y][x] = color;
 	}
 }
 
