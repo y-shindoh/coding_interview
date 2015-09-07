@@ -6,86 +6,57 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  25セント貨、10セント貨、5セント貨、1セント貨が無数にあるとして、
+  これらを使って
+  nセントを表現するすべての場合の数を計算するコードを書いてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
 #include <vector>
 
 /**
- * コインの全ての組み合わせを生成
+ * 指定金額のコインの組み合わせを全て出力
+ * @param[in]	coins	コインの種類
+ * @param[in]	length	コインの種類の総数
+ * @param[in]	value	指定金額
+ * @param[in,out]	numbers	作業領域
+ * @param[in]	i	使用済みコインの種類の総数
  */
 template<typename TYPE>
-class CoinsCalculator
+void
+calculate(const TYPE* coins,
+		  size_t length,
+		  TYPE value,
+		  std::vector<TYPE>& numbers,
+		  size_t i = 0)
 {
-private:
+	assert(coins);
 
-	size_t length_;								///< コインの種類の総数
-	const TYPE* coin_types_;					///< 各コインの価値
-	std::vector<TYPE> buffer_;					///< 作業領域 (枚数)
-	std::vector<std::vector<TYPE> >* storage_;	///< 返却値
-
-	/**
-	 * メソッド @a execute の再帰処理部分
-	 * @param[in]	value	残りの価値
-	 * @param[in]	i	処理対象のコイン
-	 */
-	void
-	execute_routine(TYPE value,
-					size_t i)
-		{
-			if (length_ <= i) {
-				if (value == (TYPE)0) storage_->push_back(buffer_);
-				return;
+	if (length <= i) {
+		if (value == 0) {
+			bool flag(false);
+			std::printf("[");
+			for (size_t j(0); j < length; ++j) {
+				if (numbers[j] == 0) continue;
+				if (flag) std::printf(", ");
+				std::printf("%G*%G", (double)coins[j], (double)numbers[j]);
+				flag = true;
 			}
-
-			if (coin_types_[i]) {
-				for (size_t j(0); coin_types_[i] * (TYPE)j <= value; ++j) {
-					buffer_[i] = (TYPE)j;
-					execute_routine(value - coin_types_[i] * (TYPE)j, i + 1);
-				}
-				buffer_[i] = (TYPE)0;
-			}
-			else {
-				execute_routine(value, i + 1);
-			}
+			std::printf("]\n");
 		}
+		return;
+	}
 
-public:
-
-	/**
-	 * コインの全ての組み合わせを生成
-	 * @param[in]	value	求めたい合計の価値
-	 * @param[in]	coins	各コインの価値
-	 * @param[in]	length	引数 @a coins の長さ
-	 * @return	全ての組み合わせ
-	 * @note	生成失敗時は @a 0 が返却される。
-	 * @note	返却値は本メソッド利用者の責任で削除すること。
-	 */
-	std::vector<std::vector<TYPE> >*
-	execute(TYPE value,
-			const TYPE* coins,
-			size_t length)
-		{
-			assert(coins);
-			assert(length);
-
-			length_ = length;
-			coin_types_ = coins;
-			buffer_.clear();
-			buffer_.resize(length, (TYPE)0);
-
-			try {
-				storage_ = new std::vector<std::vector<TYPE> >();
-			}
-			catch (...) {
-				return 0;
-			}
-
-			execute_routine(value, 0);
-
-			return storage_;
-		}
-};
+	for (TYPE j(0); coins[i] * j <= value; ++j) {
+		numbers.push_back(j);
+		calculate<TYPE>(coins, length, value - coins[i] * j, numbers, i + 1);
+		numbers.pop_back();
+	}
+}
 
 /**
  * 動作確認用コマンド
@@ -95,23 +66,9 @@ int main()
 	const unsigned int coins[] = {25, 10, 5, 1};
 	const size_t length = sizeof(coins) / sizeof(coins[0]);
 	unsigned int value(30);
+	std::vector<unsigned int> numbers;
 
-	CoinsCalculator<unsigned int> calculator;
-	std::vector<std::vector<unsigned int> >* answers = calculator.execute(value, coins, length);
-
-	size_t m = answers->size();
-	size_t n;
-	for (size_t i(0); i < m; ++i) {
-		std::printf("[%lu] ", i);
-		n = answers->at(i).size();
-		for (size_t j(0); j < n; ++j) {
-			if (0 < j) std::printf(", ");
-			std::printf("%u", answers->at(i)[j]);
-		}
-		std::printf("\n");
-	}
-
-	delete answers;
+	calculate<unsigned int>(coins, length, value, numbers);
 
 	return 0;
 }
