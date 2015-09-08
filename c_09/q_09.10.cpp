@@ -6,6 +6,14 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  幅 wi、高さ hi、奥行き di の、n個の箱の山があります。
+  個々の箱は回転させることができず、
+  それぞれの箱は幅、高さ、奥行きのすべてが大きい箱の上に積むことしかできません。
+  積み上げた箱の高さができるだけ大きくなるように、箱を積むメソッドを実装してください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -15,9 +23,7 @@
  * タプルの全要素を使って降順にソーティング
  * @param[in,out]	data	タプルの配列
  * @param[in]	length	配列 @a data の要素数
- * @note	ソート条件の優先度はタプルの前方の値ほど強い。
- * @note	テンプレートの型 @a TYPE はタプルの値の型。
- * @note	テンプレートの整数 @a N はタプルの値の数。
+ * @note	ソート条件の優先度はタプルの後方の値ほど強い。
  * @note	実体は手抜きのバブル・ソート。最悪計算量は O(n^2)。
  */
 template<typename TYPE, size_t N>
@@ -26,24 +32,25 @@ sort_tuples(TYPE data[][N],
 			size_t length)
 {
 	assert(data);
-	assert(length);
+	assert(0 < length);
+	assert(0 < N);
 
-	bool c;
 	size_t h;
+	bool f;
 	TYPE tmp[N];
 
 	for (size_t k(0); k < N; ++k) {
 		for (size_t i(0); i < length; ++i) {
 			h = length - i;
-			c = false;
+			f = true;
 			for (size_t j(1); j < h; ++j) {
 				if (data[j-1][k] >= data[j][k]) continue;
-				c = true;
-				std::memcpy((void*)tmp, (const void*)data[j], sizeof(TYPE) * N);
-				std::memcpy((void*)data[j], (const void*)data[j-1], sizeof(TYPE) * N);
-				std::memcpy((void*)data[j-1], (const void*)tmp, sizeof(TYPE) * N);
+				std::memcpy((void*)tmp, (const void*)data[j-1], sizeof(tmp));
+				std::memcpy((void*)data[j-1], (const void*)data[j], sizeof(tmp));
+				std::memcpy((void*)data[j], (const void*)tmp, sizeof(tmp));
+				f = false;
 			}
-			if (!c) break;
+			if (f) break;
 		}
 	}
 }
@@ -53,8 +60,6 @@ sort_tuples(TYPE data[][N],
  * @param[out]	file	出力先
  * @param[in]	data	タプルの配列
  * @param[in]	length	配列 @a data の要素数
- * @note	テンプレートの型 @a TYPE はタプルの値の型。
- * @note	テンプレートの整数 @a N はタプルの値の数。
  */
 template<typename TYPE, size_t N>
 void
@@ -64,7 +69,7 @@ print_tuples(FILE* file,
 {
 	assert(file);
 	assert(data);
-	assert(length);
+	assert(0 < length);
 
 	for (size_t i(0); i < length; ++i) {
 		std::fprintf(file, "[%lu: ", i);
@@ -74,7 +79,7 @@ print_tuples(FILE* file,
 		}
 		std::fprintf(file, "] ");
 	}
-	if (length) std::fprintf(file, "\n");
+	if (0 < length) std::fprintf(file, "\n");
 }
 
 size_t buffer[1024];	///< メソッド @a find_tuples_sequence_routine のキャッシュ
@@ -85,43 +90,41 @@ size_t buffer[1024];	///< メソッド @a find_tuples_sequence_routine のキャ
  * @param[in]	length	配列 @a data の要素数
  * @param[in]	index	最後に繋げた要素
  * @param[in]	target	返却値に用いるタプルの値のインデックス
- * @return	連結したタプルの指定値の合計
- * @note	テンプレートの型 @a TYPE はタプルの値の型。
- * @note	テンプレートの整数 @a N はタプルの値の数。
+ * @param[in,out]	buffer	DP用作業領域
+ * @note	最悪計算量は O(n^2)。
  */
 template<typename TYPE, size_t N>
-TYPE
+void
 find_tuples_sequence_routine(const TYPE data[][N],
 							 size_t length,
 							 size_t index,
-							 size_t target)
+							 size_t target,
+							 size_t* buffer)
 {
 	assert(data);
-	assert(length);
+	assert(0 < length);
 	assert(target < N);
 
-	if (length <= index + 1) return 0;
+	if (index < length && buffer[index] == 0) {
+		TYPE r(0);
+		bool f;
 
-	if (buffer[index] == ~(size_t)0) {
-		buffer[index] = 0;
-		bool flag;
-		TYPE t;
-
-		for (size_t i(index+1); i < length; ++i) {
-			flag = true;
+		for (size_t i = index + 1; i < length; ++i) {
+			f = false;
 			for (size_t j(0); j < N; ++j) {
 				if (data[index][j] > data[i][j]) continue;
-				flag = false;
+				f = true;
 				break;
 			}
-			if (!flag) continue;
-			t = find_tuples_sequence_routine<TYPE, N>(data, length, i, target);
-			t += data[i][2];
-			if (buffer[index] < t) buffer[index] = t;
+			if (f) continue;
+			if (0 == buffer[i]) {	// 探索済みなら絶対に正の数が入っている
+				find_tuples_sequence_routine<TYPE, N>(data, length, i, target, buffer);
+			}
+			if (r < buffer[i]) r = buffer[i];
 		}
-	}
 
-	return buffer[index];
+		buffer[index] = r + data[index][target];
+	}
 }
 
 /**
@@ -129,31 +132,33 @@ find_tuples_sequence_routine(const TYPE data[][N],
  * @param[in]	data	ソート済みタプルの配列
  * @param[in]	length	配列 @a data の要素数
  * @param[in]	target	返却値に用いるタプルの値のインデックス
+ * @param[in,out]	buffer	DP用作業領域 (0埋めしておくこと)
  * @return	連結したタプルの指定値の最大合計値
- * @note	テンプレートの型 @a TYPE はタプルの値の型。
- * @note	テンプレートの整数 @a N はタプルの値の数。
- * @todo	ソーティングした方が計算効率が良いか検討すること。
+ * @note	最悪計算量は O(n^2)。
  */
 template<typename TYPE, size_t N>
 TYPE
 find_tuples_sequence(const TYPE data[][N],
 					 size_t length,
-					 size_t target)
+					 size_t target,
+					 size_t* buffer)
 {
 	assert(data);
-	assert(length);
+	assert(0 < length);
 	assert(target < N);
 
-	TYPE t;
-	TYPE m(0);
-
 	for (size_t i(0); i < length; ++i) {
-		t = find_tuples_sequence_routine<TYPE, N>(data, length, i, target);
-		t += data[i][target];
-		if (m < t) m = t;
+		find_tuples_sequence_routine<TYPE, N>(data, length, i, target, buffer);
 	}
 
-	return m;
+	size_t h(0);
+
+	for (size_t i(1); i < length; ++i) {
+		if (buffer[h] >= buffer[i]) continue;
+		h = i;
+	}
+
+	return buffer[h];
 }
 
 /**
@@ -164,16 +169,18 @@ int main()
 	size_t boxes[][3] = {{1, 2, 3},
 						 {2, 2, 4},
 						 {5, 4, 5},
-						 {2, 3, 4}};
+						 {2, 3, 4},
+						 {3, 1, 10}};
 	const size_t l = sizeof(boxes) / sizeof(boxes[0]);
-
-	std::memset((void*)buffer, ~0, sizeof(buffer));
 
 	print_tuples<size_t, 3>(stdout, boxes, l);
 	sort_tuples<size_t, 3>(boxes, l);
 	print_tuples<size_t, 3>(stdout, boxes, l);
 
-	size_t k = find_tuples_sequence<size_t, 3>(boxes, l, 2);
+	size_t buffer[sizeof(boxes) / sizeof(boxes[0])];
+
+	std::memset((void*)buffer, 0, sizeof(buffer));
+	size_t k = find_tuples_sequence<size_t, 3>(boxes, l, 2, buffer);
 	std::printf("=> %lu\n", k);
 
 	return 0;
