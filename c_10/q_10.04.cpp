@@ -6,6 +6,15 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  1からNまでのすべての数が含まれる配列があります。
+  Nの値は最大で32,000です。
+  配列の数には重複しているものが含まれており、Nの値は分かりません。
+  4KBしかメモリが使えないとき、
+  重複する値を表示するにはどのようにすればよいでしょうか?
+ */
+
 #include <cstddef>
 #include <bitset>
 #include <cstdio>
@@ -25,7 +34,7 @@ int main()
 		if (set[k]) {
 			std::printf("%u is a duplicated value.\n", k);
 		}
-		set[k] = true;
+		set.set(k);
 	}
 
 	return 0;
