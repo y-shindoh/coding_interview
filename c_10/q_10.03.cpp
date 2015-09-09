@@ -6,22 +6,52 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  40億個の整数からなる入力ファイルが与えられたとき、
+  ファイルの中にない整数を見つけるアルゴリズムを考えてください。
+  作業には1GBのメモリが使用できるとします。
+  (訳注: 整数は32bit)
+
+  発展問題:
+  10MBのメモリしか使用できないとすれば、どのようにしますか?
+ */
+
+/*
+  回答 (問題, 計算量 O(n)):
+  後述のクラス Bucket を用いれば、
+  該当整数 (符号なしと自然にみなせる) の有無がチェックできる。
+  このとき、インスタンスのメモリ占有量は約0.5GBとなる。
+  (M = 12500, N = 10000を想定)
+
+  回答 (発展問題, 計算量 0(kn)):
+  0〜79,999,999, 80,000,000〜159,999,999, ... などと分けて処理すれば、
+  (単に各ブロック時にブロック外の数値を無視するだけ+オフセット処理)
+  上記の問題と同じ要領で解くことができる。
+  このとき計算量は分割数に比例して増える。
+
+  回答 (発展問題, 計算量 O(n log n)):
+  200万個の整数毎にソートしその結果をファイルに出力。
+  そして合計2000個のファイルが生成されるので、
+  それをマージ・ソートの要領で処理する (ファイル全体はメモリに置かない)。
+  その際、スキップされる要素が検出できる。
+ */
+
 #include <cstddef>
 #include <cstring>
 #include <cstdio>
+#include <cassert>
 
 /**
- * @class	ビット・バケット
- * @note	テンプレートの整数については、
-			内部的に使用する配列の幅を @a M, 高さを @a N で表している。
+ * ビット列による 0〜M*N*sizeof(unsigned int)*8 の整数に対応するバケット
  */
 template<size_t M, size_t N>
 class Bucket
 {
 private:
 
-	const size_t L_;			///< 配列 @a vector_ の1要素が持つメモリ領域のビット数
-	unsigned int* vector_[N];	///< ビット・ベクトル
+	static const size_t L_ = sizeof(unsigned int) * (size_t)8;	///< インデックス計算用定数
+	unsigned int* vector_[M];	///< ビット・バケット本体
 
 public:
 
@@ -29,90 +59,76 @@ public:
 	 * コンストラクタ
 	 */
 	Bucket()
-		: L_(M * sizeof(unsigned int) * 8)
 		{
 			std::memset((void*)vector_, 0, sizeof(vector_));
 
-			for (size_t i(0); i < N; ++i) {
-				vector_[i] = new unsigned int[M];
-				std::memset((void*)vector_[i], 0, sizeof(unsigned int) * M);
+			for (size_t i(0); i < M; ++i) {
+				vector_[i] = new unsigned int[N];
+				std::memset((void*)vector_[i], 0, sizeof(unsigned int) * N);
 			}
 		}
 
 	/**
 	 * デストラクタ
 	 */
-	virtual
 	~Bucket()
 		{
-			for (size_t i(0); i < N; ++i) {
-				if (!vector_[i]) continue;
-				delete [] vector_[i];
+			for (size_t i(0); i < M; ++i) {
+				if (vector_[i]) delete [] vector_[i];
 			}
 		}
 
 	/**
-	 * ビットを1に更新
-	 * @param[in]	i	ビットの位置
+	 * 指定ビットを1に設定
+	 * @param[in]	h	指定するビット位置
 	 */
 	void
-	set(size_t i)
+	set(size_t h)
 		{
-			size_t j = i / L_;
-			size_t k = i % L_ / (sizeof(unsigned int) * 8);
-			size_t h = i % (sizeof(unsigned int) * 8);
+			size_t i = h / (L_ * N);
+			size_t j = h % (L_ * N) / L_;
+			size_t k = h % L_;
 
-			vector_[j][k] |= 1u << h;
+			assert(i < M);
+			assert(j < N);
+
+			vector_[i][j] |= 1u << k;
 		}
 
 	/**
-	 * ビットを0に更新
-	 * @param[in]	i	ビットの位置
-	 */
-	void
-	reset(size_t i)
-		{
-			size_t j = i / L_;
-			size_t k = i % L_ / (sizeof(unsigned int) * 8);
-			size_t h = i % (sizeof(unsigned int) * 8);
-
-			vector_[j][k] &= ~(1u << h);
-		}
-
-	/**
-	 * ビットの状態を取得
-	 * @param[in]	i	ビットの位置
-	 * @return	ビットの状態
+	 * 指定ビットを取得
+	 * @param[in]	h	指定するビット位置
+	 * @return	指定ビットの値
 	 */
 	bool
-	get(size_t i)
+	get(size_t h) const
 		{
-			size_t j = i / L_;
-			size_t k = i % L_ / (sizeof(unsigned int) * 8);
-			size_t h = i % (sizeof(unsigned int) * 8);
+			size_t i = h / (L_ * N);
+			size_t j = h % (L_ * N) / L_;
+			size_t k = h % L_;
 
-			return (bool)(vector_[j][k] & (1u << h));
+			assert(i < M);
+			assert(j < N);
+
+			return (bool)(vector_[i][j] & (1u << k));
 		}
 
-
 	/**
-	 * ビットの状態を表示
-	 * @param[out]	file	表示先
+	 * ビット・バケットの状態を出力
+	 * @param[out]	file	出力先
 	 */
 	void
-	print(FILE* file)
+	print(FILE* file = stdout) const
 		{
-			int c;
-
-			for (size_t i(0); i < N; ++i) {
-				for (size_t j(0); j < M; ++j) {
-					if (0 < j) std::printf(" ");
-					for (size_t k(0); k < sizeof(unsigned int) * 8; ++k) {
-						c = (vector_[i][j] & (1u << k)) != 0;
-						std::printf("%d", c);
+			for (size_t i(0); i < M; ++i) {
+				std::fprintf(file, "[%lu]\t", i * L_ * N);
+				for (size_t j(0); j < N; ++j) {
+					if (0 < j) std::fprintf(file, " ");
+					for (size_t k(0); k < sizeof(unsigned int) * (size_t)8; ++k) {
+						std::fprintf(file, "%d", (bool)(vector_[i][j] & (1u << k)));
 					}
 				}
-				std::printf("\n");
+				std::fprintf(file, "\n");
 			}
 		}
 };
@@ -122,15 +138,19 @@ public:
  */
 int main()
 {
-	Bucket<2, 4> bucket;
+	Bucket<4, 2> bucket;
 
-	bucket.print(stdout);
-	std::printf("----\n");
-	bucket.set(97);
-	bucket.print(stdout);
+	bucket.print();
 	std::printf("----\n");
 	bucket.set(64);
-	bucket.print(stdout);
+	bucket.set(97);
+	bucket.set(200);
+	bucket.print();
+
+	for (size_t i(0); i < 4 * 2 * sizeof(unsigned int) * 8; ++i) {
+		if (!bucket.get(i)) continue;
+		std::printf("%lu: found\n", i);	// 今回は見つかった整数を表示
+	}
 
 	return 0;
 }
