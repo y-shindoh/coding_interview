@@ -27,31 +27,39 @@ MergeSort(TYPE* data,
 {
 	assert(data);
 	assert(buffer);
-	assert(length);
+	assert(0 < length);
 
-	if (length <= 1) return;
-	if (length == 2) {
-		if (data[0] > data[1]) {
-			TYPE tmp(data[0]);
-			data[0] = data[1];
-			data[1] = tmp;
+	if (length <= 2) {
+		if (length == 2) {
+			if (data[0] > data[1]) {
+				TYPE tmp = data[0];
+				data[0] = data[1];
+				data[1] = tmp;
+			}
 		}
 		return;
 	}
 
-	const size_t center = length / 2;
-	if (1 < center) MergeSort(data, buffer, center);
-	if (1 < length - center) MergeSort(data + center, buffer, length - center);
+	size_t center = length / 2;
 
-	size_t i(0), j(center);
+	MergeSort(data, buffer, center);
+	MergeSort(data + center, buffer, length - center);
+
+	std::memcpy((void*)buffer, (const void*)data, sizeof(TYPE) * center);
+
+	size_t i(0);
+	size_t j(center);
+
 	for (size_t k(0); k < length; ++k) {
-		if (center <= i) break;
-		if (length <= j) buffer[k] = data[i++];
-		else if (data[i] <= data[j]) buffer[k] = data[i++];
-		else buffer[k] = data[j++];
+		if (buffer[i] <= data[j] || j == length) {
+			data[k] = buffer[i];
+			if (++i == center) break;
+		}
+		else {
+			data[k] = data[j];
+			++j;
+		}
 	}
-
-	std::memcpy((void*)data, (const void*)buffer, sizeof(TYPE) * j);
 }
 
 /**
