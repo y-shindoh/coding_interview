@@ -28,43 +28,38 @@ QuickSort(TYPE* data,
 	assert(data);
 	assert(length);
 
-	TYPE tmp;
-
 	if (length <= 1) return;
-	if (length == 2) {
-		if (data[0] > data[1]) {
-			tmp = data[0];
-			data[0] = data[1];
-			data[1] = tmp;
-		}
-		return;
-	}
 
 	if (flag) std::srand((unsigned)std::time(0));
 
 	const size_t h = (size_t)std::rand() % length;	// 乱択
-	tmp = data[0];
-	data[0] = data[h];
-	data[h] = tmp;
-	size_t j(1);
+	size_t k(1);
+	TYPE tmp;
+
+	if (h != 0) {
+		tmp = data[h];
+		data[h] = data[0];
+		data[0] = tmp;
+	}
 
 	for (size_t i(1); i < length; ++i) {
-		if (data[i] >= data[0]) continue;
-		if (i != j) {
+		if (data[0] <= data[i]) continue;
+		if (k != i) {
 			tmp = data[i];
-			data[i] = data[j];
-			data[j] = tmp;
+			data[i] = data[k];
+			data[k] = tmp;
 		}
-		++j;
-	}
-	if (1 < j) {
-		tmp = data[0];
-		data[0] = data[j-1];
-		data[j-1] = tmp;
+		++k;
 	}
 
-	if (2 < j) QuickSort<TYPE>(data, j - 1, false);
-	if (j + 1 < length) QuickSort<TYPE>(data + j, length - j, false);
+	if (1 < k) {
+		tmp = data[0];
+		data[0] = data[k-1];
+		data[k-1] = tmp;
+	}
+
+	if (2 < k) QuickSort<TYPE>(data, k - 1, false);
+	if (k + 1 < length) QuickSort<TYPE>(data + k, length - k, false);
 }
 
 /**
