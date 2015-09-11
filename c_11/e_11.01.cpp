@@ -26,18 +26,18 @@ BubbleSort(TYPE* data,
 	assert(length);
 
 	TYPE tmp;
+	bool flag;
 
-	for (size_t h(length); 1 < h; --h) {
-		bool flag(false);
-		for (size_t i(0), j(1); j < h; ++i, ++j) {
-			if (data[i] <= data[j]) continue;
-			tmp = data[i];
-			data[i] = data[j];
+	for (size_t i(0); i < length; ++i) {
+		flag = true;
+		for (size_t j(1); j < length - i; ++j) {
+			if (data[j-1] <= data[j]) continue;	// 小さい順
+			tmp = data[j-1];
+			data[j-1] = data[j];
 			data[j] = tmp;
-			flag = true;
+			flag = false;
 		}
-
-		if (!flag) break;
+		if (flag) break;
 	}
 }
 
