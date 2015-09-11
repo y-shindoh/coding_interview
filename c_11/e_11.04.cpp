@@ -42,8 +42,8 @@ MergeSort(TYPE* data,
 
 	size_t center = length / 2;
 
-	MergeSort(data, buffer, center);
-	MergeSort(data + center, buffer, length - center);
+	MergeSort<TYPE>(data, buffer, center);
+	MergeSort<TYPE>(data + center, buffer, length - center);
 
 	std::memcpy((void*)buffer, (const void*)data, sizeof(TYPE) * center);
 
