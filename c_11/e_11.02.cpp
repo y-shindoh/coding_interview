@@ -27,11 +27,10 @@ InsertionSort(TYPE* data,
 	TYPE tmp;
 
 	for (size_t i(1); i < length; ++i) {
-		while (data[i-1] > data[i]) {
-			tmp = data[i-1];
-			data[i-1] = data[i];
-			data[i] = tmp;
-			if (--i == 0) break;
+		for (size_t j(i); 0 < j && data[j-1] >= data[j]; --j) {
+			tmp = data[j-1];
+			data[j-1] = data[j];
+			data[j] = tmp;
 		}
 	}
 }
