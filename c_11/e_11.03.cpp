@@ -25,17 +25,18 @@ SelectionSort(TYPE* data,
 	assert(length);
 
 	size_t h;
+	TYPE tmp;
+
 	for (size_t i(0); i < length; ++i) {
 		h = i;
 		for (size_t j(i+1); j < length; ++j) {
 			if (data[h] <= data[j]) continue;
 			h = j;
 		}
-		if (i != h) {
-			TYPE tmp(data[i]);
-			data[i] = data[h];
-			data[h] = tmp;
-		}
+		if (i == h) continue;
+		tmp = data[h];
+		data[h] = data[i];
+		data[i] = tmp;
 	}
 }
 
