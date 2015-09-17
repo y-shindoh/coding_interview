@@ -56,7 +56,7 @@ count_route(size_t width,
 	// 総数の算出
 	for (size_t i(0); i < hight; ++i) {
 		h = (i + 1) % 2;
-		k = i % 2;
+		k = 1 - h;
 		for (size_t j(0); j < width; ++j) {
 			buffer[k][j] += buffer[h][j];
 			if (0 < j) buffer[k][j] += buffer[k][j-1];
