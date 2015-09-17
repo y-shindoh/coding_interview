@@ -23,8 +23,12 @@ int main()
 
 	for (int key(3); key < 9; ++key) {
 		i = BinarySearch<int>(data, l, key);	// 二分探索
-		if (i == INVALID_INDEX) continue;
-		std::printf("data[%lu] = %d\n", i, key);
+		if (i != INVALID_INDEX) {
+			std::printf("data[%lu] = %d\n", i, key);
+		}
+		else {
+			std::printf("data[-] = %d\n", key);
+		}
 	}
 
 	return 0;
