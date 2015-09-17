@@ -7,61 +7,64 @@
  */
 
 #include <cstddef>
+#include <cstring>
 #include <cassert>
-#include <deque>
 #include "utility.hpp"
 
 /**
  * 基数ソートの実装 (直接基数法)
  * @param[in,out]	data	ソート対象の配列
+ * @param[out]	buffer	作業領域 (引数 @a data 以上の広さが必要)
  * @param[in]	length	配列 @a data の長さ
  * @note	計算量は平均 O(kn)。ただし k = log_N M (Mは @a data の最大値)。
  * @note	テンプレートの型 @a TYPE は符号なし整数を指定すること。
  * @note	テンプレートの整数 @a N はバケットの大きさ。
- * @todo	std::dequeではなく2つのN*length配列で処理するように変更する。
  */
 template<typename TYPE, size_t N>
 void
 RadixSort(TYPE* data,
+		  TYPE* buffer,
 		  size_t length)
 {
 	assert(data);
-	assert(length);
+	assert(buffer);
+	assert(0 < length);
 
-	std::deque<TYPE> buckets[N];
-
-	for (size_t i(0); i < length; ++i) {
-		buckets[0].push_back(data[i]);
-	}
-
-	size_t l[N];
+	TYPE* array[] = {data, buffer};
 	bool flag;
-	size_t d(1);
-	size_t k, t;
+	size_t counts[N+1];
+	size_t h(0);
+	size_t k, j;
+	TYPE d(1);
 
-	do {
-		for (size_t i(0); i < N; ++i) {
-			l[i] = buckets[i].size();
+	while ('-') {
+		std::memset((void*)counts, 0, sizeof(size_t) * (N+1));
+		k = 1 - h;
+
+		flag = true;
+		for (size_t i(0); i < length; ++i) {
+			j = (size_t)(array[h][i] / d % N + 1);
+			counts[j]++;
+			if (N <= array[h][i] / d) flag = false;
 		}
 
-		flag = false;
-		for (size_t i(0); i < N; ++i) {
-			for (size_t j(0); j < l[i]; ++j) {
-				t = (size_t)buckets[i].front();
-				buckets[i].pop_front();
-				if (t >= d) flag = true;
-				k = t / d % N;
-				buckets[k].push_back(t);
-			}
+		for (size_t i(2); i < N; ++i) {
+			counts[i] += counts[i-1];
 		}
+
+		for (size_t i(0); i < length; ++i) {
+			j = (size_t)(array[h][i] / d % N);
+			j = counts[j]++;
+			array[k][j] = array[h][i];
+		}
+
+		if (flag) break;
+
+		h = k;
 		d *= N;
-	} while (flag);
-
-	for (size_t i(0); i < length; ++i) {
-		t = buckets[0].front();
-		buckets[0].pop_front();
-		data[i] = t;
 	}
+
+	if (h == 0) std::memcpy((void*)data, (const void*)buffer, sizeof(TYPE) * length);
 }
 
 /**
@@ -70,11 +73,12 @@ RadixSort(TYPE* data,
 int main()
 {
 	int data[] = {10, 1, 9, 2, 8, 3, 7, 4, 6, 5};
+	int buffer[1024];
 	const size_t l = sizeof(data) / sizeof(data[0]);
 
 	print_array<int>(data, l, "BEFORE");
 
-	RadixSort<int, 10>(data, l);
+	RadixSort<int, 4>(data, buffer, l);
 
 	print_array<int>(data, l, "AFTER");
 
