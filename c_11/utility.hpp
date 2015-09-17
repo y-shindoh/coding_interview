@@ -34,7 +34,7 @@ print_array(const TYPE* data,
 
 /**
  * ソート済み配列に対し要素を探索
- * @param[in]	data	探索対象のソート済み配列
+ * @param[in]	data	探索対象の昇順ソート済み配列
  * @param[in]	length	配列 @a data の長さ
  * @param[in]	key	探索対象の要素
  * @return	配列 @a data の @a key のあるインデックス
@@ -49,21 +49,21 @@ BinarySearch(const TYPE* data,
 			 const TYPE& key)
 {
 	assert(data);
-	assert(length);
-	assert(length != INVALID_INDEX);
+	assert(0 < length);
+	assert(length != INVALID_INDEX);	// 非対応
 
 	size_t s(0);
-	size_t e = length - 1;
+	size_t e(length - 1);
 	size_t i;
 
 	while (s <= e) {
-		i = (s + e) / 2;
-		if (data[i] < key) {
+		i = (s + e) / (size_t)2;
+		if (key > data[i]) {
 			s = i + 1;
 			continue;
 		}
 		if (data[i] > key) {
-			if (0 == i) break;
+			if (i == 0) break;	// 注意: 符号なし整数
 			e = i - 1;
 			continue;
 		}
