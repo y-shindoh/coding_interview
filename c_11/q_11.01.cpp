@@ -6,6 +6,13 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+   問題:
+   2つのソートされた配列A, Bがあります。
+   Aの配列には十分に空きがあり、後ろにBを追加することができます。
+   このとき、BをAにソートされた状態でマージするメソッドを書いてください。
+ */
+
 #include <cstddef>
 #include <cassert>
 #include "utility.hpp"
@@ -29,20 +36,26 @@ MergeSortedArray(TYPE* main_array,
 				 size_t sub_length)
 {
 	assert(main_array);
-	assert(main_length);
+	assert(0 < main_length);
 	assert(sub_array);
-	assert(sub_length);
+	assert(0 < sub_length);
 
-	int i = (int)main_length - 1;
-	int j = (int)sub_length - 1;
-	int k = (int)main_length + sub_length - 1;
+	for (size_t i(main_length); 0 < i; --i) {
+		main_array[i+sub_length-1] = main_array[i-1];
+	}
 
-	while (0 <= k) {
-		if (j < 0) break;
-		if (i < 0) main_array[k] = sub_array[j--];
-		else if (main_array[i] <= sub_array[j]) main_array[k] = sub_array[j--];
-		else main_array[k] = main_array[i--];
-		--k;
+	size_t h(sub_length);
+	size_t k(0);
+
+	for (size_t i(0); i < main_length + sub_length; ++i) {
+		if (h < main_length + sub_length && main_array[h] < sub_array[k]) {
+			main_array[i] = main_array[h];
+			++h;
+		}
+		else {
+			main_array[i] = sub_array[k];
+			if (++k >= sub_length) break;
+		}
 	}
 
 	return main_length + sub_length;
