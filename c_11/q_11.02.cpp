@@ -6,6 +6,12 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  文字列の配列を、
+  アナグラムになっている文字列がお互いに隣り合うように並び替えるメソッドを書いてください。
+ */
+
 #include <cstddef>
 #include <cstring>
 #include <cstdio>
@@ -41,6 +47,7 @@ swap(TYPE& left,
  * @param[in]	string	入力文字列
  * @param[out]	buffer	出力文字列
  * @note	今回は手抜きしてバブル・ソートで実装。
+ * @note	US-ASCIIにのみ対応。
  */
 void
 sort_char(const char* string,
@@ -49,11 +56,11 @@ sort_char(const char* string,
 	assert(string);
 	assert(buffer);
 
-	const size_t n = std::strlen(string);
+	std::strcpy(buffer, string);
+
+	size_t n = std::strlen(string);
 	size_t k;
 	bool flag;
-
-	std::strcpy(buffer, string);
 
 	for (size_t i(0); i < n; ++i) {
 		k = n - i;
@@ -74,7 +81,7 @@ sort_char(const char* string,
  * @note	今回は手抜きしてバブル・ソートで実装。
  */
 void
-sort_pairs_array(std::pair<std::string, size_t>* data,
+sort_pairs_array(std::pair<std::string, const char*>* data,
 				 size_t length)
 {
 	assert(data);
@@ -85,19 +92,21 @@ sort_pairs_array(std::pair<std::string, size_t>* data,
 
 	for (size_t i(0); i < length; ++i) {
 		k = length - i;
-		flag = false;
+		flag = true;
 		for (size_t j(1); j < k; ++j) {
 			if (data[j-1].first <= data[j].first) continue;
 			data[j-1].first.swap(data[j].first);
-			swap<size_t>(data[j-1].second, data[j].second);
-			flag = true;
+			swap<const char*>(data[j-1].second, data[j].second);
+			flag = false;
 		}
-		if (!flag) break;
+		if (flag) break;
 	}
 }
 
 /**
  * 動作確認用コマンド
+ * @note	本来はメソッドを作る問題だが、
+			ここでは説明を簡単にするため、問題に従っていない。
  */
 int main()
 {
@@ -108,21 +117,19 @@ int main()
 							   "AaBbCc",
 							   "IJij"};
 	const size_t l = sizeof(data_1) / sizeof(data_1[0]);
-	std::pair<std::string, size_t> data_2[10];
+	std::pair<std::string, const char*> data_2[10];
 	char buffer[1024];
 
 	for (size_t i(0); i < l; ++i) {
 		sort_char(data_1[i], buffer);
 		data_2[i].first = buffer;
-		data_2[i].second = i;
+		data_2[i].second = data_1[i];
 	}
 
 	sort_pairs_array(data_2, l);
 
-	size_t j;
 	for (size_t i(0); i < l; ++i) {
-		j = data_2[i].second;
-		std::printf("[%lu] '%s' => '%s'\n", i, data_1[j], data_2[i].first.c_str());
+		std::printf("[%lu] '%s' => '%s'\n", i, data_2[i].second, data_2[i].first.c_str());
 	}
 
 	return 0;
