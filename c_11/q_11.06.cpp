@@ -44,7 +44,7 @@ find_in_matrix(const TYPE matrix[N][N],
 	assert(h <= N);
 	assert(w <= N);
 
-	size_t s(0);	// 小さい要素のインデックスの最大値 (初期値に注意)
+	size_t s(0);	// value より小さい要素の最大値 (初期値に注意)
 	size_t e = h - i < w - j ? h - i : w - j;	// 探索幅
 	size_t k;
 
@@ -68,6 +68,8 @@ find_in_matrix(const TYPE matrix[N][N],
 	//   e == 0 が成立する。
 	// - 探索範囲の全ての要素が探索対象より小さい場合、
 	//   j + e == w か i + e == h のいずれか or 両方が成立する。
+	// - 上記のいずれでもない場合、s + 1 == e となる。
+	//   もちろん、探索終了時を除く。
 
 	std::pair<size_t, size_t> result(N, N);
 
