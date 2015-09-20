@@ -38,6 +38,11 @@ find_longest_sequence(const std::pair<TYPE, TYPE>* data,
 					  size_t index,
 					  size_t* buffer)
 {
+	assert(data);
+	assert(0 < length);
+	assert(index < length);
+	assert(buffer);
+
 	if (0 < buffer[index]) return;
 
 	for (size_t i(0); i < length; ++i) {
@@ -68,6 +73,10 @@ find_longest_sequence(const std::pair<TYPE, TYPE>* data,
 					  size_t length,
 					  size_t* buffer)
 {
+	assert(data);
+	assert(0 < length);
+	assert(buffer);
+
 	std::memset((void*)buffer, 0, sizeof(size_t) * length);
 
 	size_t k(0);
