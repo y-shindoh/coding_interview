@@ -26,7 +26,7 @@
  * @param[in]	data	サイズの組の配列
  * @param[in]	length	配列 @a data の要素数
  * @param[in]	index	起点要素のインデックス
- * @param[out]	buffer	計算領域
+ * @param[out]	buffer	計算領域 (長さは @a length 以上)
  * @return	連結した要素の最大数
  * @note	テンプレートの型 @a TYPE は配列の要素の型。
  * @note	最悪計算量は O(n^2)。ただし n は @a length に等しい。
@@ -60,7 +60,7 @@ find_longest_sequence(const std::pair<TYPE, TYPE>* data,
  * 連結する要素の最大数を算出
  * @param[in]	data	サイズの組の配列
  * @param[in]	length	配列 @a data の要素数
- * @param[out]	buffer	計算領域
+ * @param[out]	buffer	計算領域 (長さは @a length 以上)
  * @return	連結した要素の最大数
  * @note	テンプレートの型 @a TYPE は配列の要素の型。
  * @note	最悪計算量は O(n^2)。ただし n は @a length に等しい。
