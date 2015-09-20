@@ -65,7 +65,7 @@ find_longest_sequence(const std::pair<TYPE, TYPE>* data,
  * @note	テンプレートの型 @a TYPE は配列の要素の型。
  * @note	最悪計算量は O(n^2)。ただし n は @a length に等しい。
  * @note	ソーティング後の配列を処理した方が効率的だが、
-			今回は未ソートの配列を対象にした。
+			今回は問題の難易度を上げるため未ソートの配列を対象にした。
  */
 template<typename TYPE>
 size_t
