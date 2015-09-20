@@ -6,6 +6,12 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  行と列がそれぞれソートされたMxNの行列があります。
+  この行列からある要素を見つけるメソッドを書いてください。
+ */
+
 #include <cstddef>
 #include <cstdio>
 #include <cassert>
@@ -17,8 +23,8 @@
  * @param[in]	value	探索対象の値
  * @param[in]	i	探索開始インデックス (行)
  * @param[in]	j	探索開始インデックス (列)
- * @param[in]	h	探索終了インデックス (行)
- * @param[in]	w	探索終了インデックス (列)
+ * @param[in]	h	探索終端インデックス (行, 1つ前のインデックスまで探索)
+ * @param[in]	w	探索終端インデックス (列, 1つ前のインデックスまで探索)
  * @return	探索結果の行と列のインデックス (探索失敗時は @a N の組が返る)
  * @note	テンプレートの整数 @a N は正方行列の高さ・幅。
  * @note	最悪計算量は O(n log n) となる。
@@ -33,50 +39,50 @@ find_in_matrix(const TYPE matrix[N][N],
 			   size_t w = N)
 {
 	assert(matrix);
-	assert(i <= h);
-	assert(j <= w);
+	assert(i < h);
+	assert(j < w);
 	assert(h <= N);
 	assert(w <= N);
 
-	const size_t g(i);
-	const size_t k(j);
+	size_t s(0);	// 小さい要素のインデックスの最大値 (初期値に注意)
+	size_t e = h - i < w - j ? h - i : w - j;	// 探索幅
+	size_t k;
 
-	size_t x;
-	size_t s(0);
-	size_t e(h - i);
-	if (w - j < e) e = w - j;
-
-	// 対角線上を二分探索
 	while (s < e) {
-		x = (s + e) / 2;
-		if (value < matrix[i+x][j+x]) {
-			if (e == x) break;
-			e = x;
+		k = (s + e) / 2;
+		if (matrix[k+i][k+j] < value) {
+			if (s == k) break;	// sとeが隣接
+			s = k;
 		}
-		else if (value > matrix[i+x][j+x]) {
-			if (s == x) break;
-			s = x;
+		else if (matrix[k+i][k+j] > value) {
+			e = k;
 		}
 		else {
-			return std::pair<size_t, size_t>(i+x, j+x);
+			return std::pair<size_t, size_t>(k+i, k+j);
 		}
 	}
 
-	i += e;
-	j += e;
+	////////////////////////////////////////////////////////////
+	// メモ:
+	// - 探索範囲の全ての要素が探索対象より大きい場合、
+	//   e == 0 が成立する。
+	// - 探索範囲の全ての要素が探索対象より小さい場合、
+	//   j + e == w か i + e == h のいずれか or 両方が成立する。
 
 	std::pair<size_t, size_t> result(N, N);
 
-	// 右上を探索
-	if (k < j && j < w) {
-		result = find_in_matrix<TYPE, N>(matrix, value, g, j, i, w);
-		if (result.first < N) return result;
-	}
+	if (s < e) {
+		// 右上
+		if (j + e < w) {
+			result = find_in_matrix<TYPE, N>(matrix, value, i, j + e, i + e, w);
+			if (result.first != N && result.second != N) return result;
+		}
 
-	// 左下を探索
-	if (g < i && i < h) {
-		result = find_in_matrix<TYPE, N>(matrix, value, i, k, h, j);
-		if (result.first < N) return result;
+		// 左下
+		if (i + e < h) {
+			result = find_in_matrix<TYPE, N>(matrix, value, i + e, j, h, j + e);
+			if (result.first != N && result.second != N) return result;
+		}
 	}
 
 	return result;
@@ -87,10 +93,10 @@ find_in_matrix(const TYPE matrix[N][N],
  */
 int main()
 {
-	int matrix[4][4] = {{15, 20, 70, 85},
-						{20, 35, 80, 95},
-						{30, 55, 95, 105},
-						{40, 80, 100, 120}};
+	int matrix[4][4] = {{15,  20,  70,  85},
+						{20,  35,  80,  95},
+						{30,  55,  95, 105},
+						{40,  80, 100, 120}};
 	int value(40);
 
 	std::pair<size_t, size_t> result = find_in_matrix<int, 4>(matrix, value);
