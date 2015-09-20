@@ -43,10 +43,10 @@ find_longest_sequence(const std::pair<TYPE, TYPE>* data,
 	assert(index < length);
 	assert(buffer);
 
-	if (0 < buffer[index]) return;
+	if (0 < buffer[index]) return;	// DP
 
 	for (size_t i(0); i < length; ++i) {
-		if (i == index) continue;
+		if (i == index) continue;	// 本来は不要
 		if (data[index].first <= data[i].first) continue;
 		if (data[index].second <= data[i].second) continue;
 		find_longest_sequence<TYPE>(data, length, i, buffer);
