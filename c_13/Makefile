@@ -1,16 +1,10 @@
 # -*- tab-width: 4 -*-
 
-SOURCE	:= $(sort $(wildcard *.c) $(wildcard *.cpp))
-EXECUTE	:= $(patsubst %.cpp,%.exe,$(patsubst %.c,%.exe,$(SOURCE)))
+SOURCE	:= $(wildcard *.cpp)
+EXECUTE	:= $(patsubst %.cpp,%.exe,$(SOURCE))
 
-CC			:= clang
 CXX			:= clang++
-CFLAGS		:= -Wall -std=c99
 CXXFLAGS	:= -Wall -Weffc++ -std=c++98
-
-%.exe : %.c $(wildcard *.h)
-	# create: $@
-	$(CC) $(CFLAGS) $< -o $@
 
 %.exe : %.cpp $(wildcard *.hpp)
 	# create: $@
