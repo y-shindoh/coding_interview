@@ -12,8 +12,9 @@
  */
 
 #include <cstddef>
-#include <iostream>
 #include <cstdio>
+#include <cassert>
+#include <iostream>
 #include <vector>
 #include <string>
 
@@ -29,6 +30,8 @@ get_last_lines(std::istream& stream,
 			   std::vector<std::string>& lines,
 			   size_t number)
 {
+	assert(0 < number);
+
 	lines.clear();
 	lines.resize(number);
 
