@@ -6,63 +6,94 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  C++で、仮想関数はどのように動作しますか?
+ */
+
 #include <cstddef>
 #include <cstdio>
 
-class A
+class Parent
 {
 public:
 
 	virtual
-	~A()
+	~Parent()
 		{
 			;
 		}
 
 	virtual void
-	function1()
+	method_1() const
 		{
-			std::printf("A::function1\n");
+			std::printf("method_1 in Parent\n");
 		}
 
 	void
-	function2()
+	method_2() const
 		{
-			std::printf("A::function2\n");
+			std::printf("method_2 in Parent\n");
 		}
 };
 
-class B : public A
+class Child : public Parent
 {
 public:
 
-	~B()
+	~Child()
 		{
 			;
 		}
 
 	void
-	function1()
+	method_1() const
 		{
-			std::printf("B::function1\n");
+			std::printf("method_1 in Child\n");
 		}
 
 	void
-	function2()
+	method_2() const
 		{
-			std::printf("B::function2\n");
+			std::printf("method_2 in Child\n");
 		}
 };
 
-/**
- * 動作確認用コマンド
- */
-int main()
+class GroundChild : public Child
 {
-	A* object = new B;
+public:
 
-	object->function1();	// B
-	object->function2();	// A
+	~GroundChild()
+		{
+			;
+		}
 
-	delete object;
+	void
+	method_1() const
+		{
+			std::printf("method_1 in GroundChild\n");
+		}
+
+	void
+	method_2() const
+		{
+			std::printf("method_2 in GroundChild\n");
+		}
+};
+
+int
+main()
+{
+	Parent* p = new Child;
+	Child* c = new GroundChild;
+
+	p->method_1();	// 仮想関数テーブルにより子クラスのメソッドを呼ぶ
+	p->method_2();	// 親クラスのメソッドを呼ぶ
+	c->method_1();	// 仮想関数テーブルにより子クラスのメソッドを呼ぶ
+	c->method_2();	// 親クラスのメソッドを呼ぶ
+
+	delete p;
+	delete c;
+
+	return 0;
 }
