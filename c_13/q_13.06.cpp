@@ -6,6 +6,11 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  基本クラスのデストラクタは、なぜ virtual 宣言する必要があるのですか?
+ */
+
 #include <cstddef>
 #include <cstdio>
 
