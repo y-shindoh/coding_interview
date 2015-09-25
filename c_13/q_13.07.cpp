@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <set>
 
 /**
  * 二分探索木のノード
@@ -79,18 +80,21 @@ public:
 
 	/**
 	 * 二分探索木を複製
+	 * @param[in,out]	buffer	処理済みノードの集合
 	 * @return	複製した二分探索木の根ノード
 	 * @note	計算量は O(n)。ただし n はノード数。
-	 * @note	ループのあるデータ構造の場合、std:set で検出する機構を追加する。
+	 * @note	ループのあるデータ構造を考慮している。
 	 */
 	Node<TYPE>*
-	copy() const
+	copy(std::set<const Node<TYPE>*> buffer) const
 		{
 			Node<TYPE>* node = new Node<TYPE>(data_);
+			buffer.insert(this);
 
 			for (size_t i(0); i < 2; ++i) {
 				if (!children_[i]) continue;
-				node->children_[i] = children_[i]->copy();
+				if (buffer.find(children_[i]) != buffer.end()) continue;
+				node->children_[i] = children_[i]->copy(buffer);
 			}
 
 			return node;
@@ -124,12 +128,14 @@ public:
 int
 main()
 {
+	std::set<const Node<int>*> buffer;
 	Node<int>* tree_o = new Node<int>(5);
+
 	tree_o->add(6);
 	tree_o->add(3);
 	tree_o->add(4);
 
-	Node<int>* tree_c = tree_o->copy();
+	Node<int>* tree_c = tree_o->copy(buffer);
 
 	tree_o->add(2);
 	tree_c->add(10);
