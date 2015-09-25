@@ -81,6 +81,7 @@ public:
 	 * 二分探索木を複製
 	 * @return	複製した二分探索木の根ノード
 	 * @note	計算量は O(n)。ただし n はノード数。
+	 * @note	ループのあるデータ構造の場合、std:set で検出する機構を追加する。
 	 */
 	Node<TYPE>*
 	copy() const
