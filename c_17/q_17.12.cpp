@@ -10,9 +10,6 @@
   問題:
   ある配列において、
   2つの要素の合計値が指定した値と等しくなる組み合わせを全て見つけるアルゴリズムを設計してください。
-
-  備考:
-  問題を簡単にするため、今回は入力中に重複する要素がないことを仮定する。
  */
 
 #include <cstddef>
@@ -33,12 +30,12 @@ void find_sum_1(int sum,
 {
 	assert(data);
 
-	std::set<int> set;
+	std::multiset<int> set;
 	int v;
 
 	for (size_t i = 0; i < length; ++i) {
 		v = sum - data[i];
-		if (set.find(v) != set.end()) {
+		for (size_t j(0); j < set.count(v); ++j) {
 			std::printf("(%d, %d)\n", data[i], v);
 		}
 		set.insert(data[i]);
@@ -62,12 +59,18 @@ void find_sum_2(int sum,
 
 	size_t i(0);
 	size_t j(length-1);
+	size_t m, n;
 
 	while (i < j) {
 		if (sum == data[i] + data[j]) {
-			std::printf("(%d, %d)\n", data[i], data[j]);
-			if (data[i+1] - data[i] < data[j] - data[j-1]) ++i;
-			else --j;
+			m = n = 1;
+			while (i + m < j && data[i] == data[i+m]) ++m;
+			while (i + m < j - n && data[j] == data[j-n]) ++n;
+			for (size_t k(0); k < m * n; ++k) {
+				std::printf("(%d, %d)\n", data[i], data[j]);
+			}
+			i += m;
+			j -= n;
 		}
 		else {
 			if (data[i] + data[j] < sum) ++i;
@@ -81,7 +84,7 @@ void find_sum_2(int sum,
  */
 int main()
 {
-	int data[] = {-2, -1, 0, 3, 5, 6, 7, 9, 13, 14};
+	int data[] = {-2, -1, 0, 0, 3, 5, 5, 6, 7, 9, 13, 14};
 	size_t length = sizeof(data) / sizeof(data[0]);
 
 	find_sum_1(5, data, length);
