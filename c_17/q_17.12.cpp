@@ -6,6 +6,12 @@
  * @note	see http://www.amazon.co.jp/dp/4839942390 .
  */
 
+/*
+  問題:
+  ある配列において、
+  2つの要素の合計値が指定した値と等しくなる組み合わせを全て見つけるアルゴリズムを設計してください。
+ */
+
 #include <cstddef>
 #include <set>	// 本当は unordered_set がより望ましい
 #include <cstdio>
@@ -69,7 +75,6 @@ void find_sum_2(int sum,
 
 /**
  * 動作確認用コマンド
- * @note	単語は空白区切りで記述され、大文字小文字の違いを認める。
  */
 int main()
 {
