@@ -59,7 +59,6 @@ void find_sum_2(int sum,
 
 	size_t i(0);
 	size_t j(length-1);
-	size_t m, n;
 
 	while (i < j) {
 		if (sum == data[i] + data[j]) {
