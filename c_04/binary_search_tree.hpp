@@ -64,31 +64,6 @@ private:
 		}
 
 	/**
-	 * 子孫ノードか否かを確認
-	 * @param[in]	child	確認対象の子ノード候補
-	 * @return	true: 子孫ノード, false: 子孫ノードでない
-	 * @note	最悪計算量は O(n)。ただし n は部分木のノードの総数。
-	 * @note	深さ優先探索で実装している。
-	 */
-	bool
-	have_child(const Node<int>* child) const
-		{
-			assert(child);
-
-			if (this == child) return true;
-
-			bool flag;
-
-			for (size_t i(0); i < 2; ++i) {
-				if (!children_[i]) continue;
-				flag = children_[i]->have_child(child);
-				if (flag) return true;
-			}
-
-			return false;
-		}
-
-	/**
 	 * 全ての子孫ノードの値が同一か確認
 	 * @param[in]	node	比較対象のノード
 	 * @return	true: 同一, false: 同一でない
@@ -526,35 +501,46 @@ public:
 	 * 2つのノードを含む最小の部分木を探索 (問題4.7の解答)
 	 * @param[in]	left	ノード (その1)
 	 * @param[in]	right	ノード (その2)
-	 * @param[in]	k	探索済み子ノードのインデックス (未探索なら 2 を代入)
 	 * @return	部分木の根のノード
 	 * @note	最悪計算量は O(n)。ただし n は木のノードの総数。
 	 * @note	出題の意図を考慮し、二分探索木の大小関係を条件として使っていない。
 	 */
 	static const Node<TYPE>*
 	FindMinimumSubtree(const Node<TYPE>* left,
-					   const Node<TYPE>* right,
-					   size_t k = 2)
+					   const Node<TYPE>* right)
 		{
+			assert(left);
 			assert(right);
 
-			bool flag;
+			int i(0);
+			int j(0);
+			const Node<TYPE>* node;
 
-			while (left) {
-				if (left == right) return left;
-
-				for (size_t i(0); i < 2; ++i) {
-					if (i == k) continue;
-					if (!left->children_[i]) continue;
-					flag = left->children_[i]->have_child(right);
-					if (flag) return left;
-				}
-
-				if (left->parent_) k = (left->parent_->children_[0] == left) ? 0 : 1;
-				left = left->parent_;	// 親をたどる
+			node = left;
+			while (node->parent_) {
+				++i;
+				node = node->parent_;
 			}
 
-			return 0;
+			node = right;
+			while (node->parent_) {
+				++j;
+				node = node->parent_;
+			}
+
+			if (i < j) {
+				while (i < j--) right = right->parent_;
+			}
+			else {
+				while (j < i--) left = left->parent_;
+			}
+
+			while (left != right) {
+				left = left->parent_;
+				right = right->parent_;
+			}
+
+			return left;
 		}
 
 #endif	// _USE_TRACE_BACK_TREE_
