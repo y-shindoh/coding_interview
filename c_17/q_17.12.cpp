@@ -49,6 +49,7 @@ void find_sum_1(int sum,
  * @param[in]	length	配列 @a data の要素数
  * @note	計算量は O(n) になる。ただし n は引数 @a length に等しい。
 			ただし事前のソート処理が O(n log n) であることに注意。
+ * @note	重複がある場合は、そのうち1つだけを処理する。
  */
 void find_sum_2(int sum,
 				const int* data,
@@ -63,6 +64,8 @@ void find_sum_2(int sum,
 	while (i < j) {
 		if (sum == data[i] + data[j]) {
 			std::printf("(%d, %d)\n", data[i], data[j]);
+			while (i + 1 < length && data[i] == data[i+1]) ++i;	// 重複対策
+			while (0 < j && data[j-1] == data[j]) --j;			// 重複対策
 			++i;
 			--j;
 		}
