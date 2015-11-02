@@ -15,7 +15,7 @@
  * バブル・ソートの実装
  * @param[in,out]	data	ソート対象の配列
  * @param[in]	length	配列 @a data の長さ
- * @note	計算量は O(n^2)。
+ * @note	最悪計算量は O(n^2)。
  */
 template<typename TYPE>
 void
@@ -23,21 +23,19 @@ BubbleSort(TYPE* data,
 		   size_t length)
 {
 	assert(data);
-	assert(length);
+	assert(0 < length);
+	assert(length < ~(size_t)0);
 
-	TYPE tmp;
-	bool flag;
+	size_t h(~(size_t)0);
+	size_t k(length);
 
-	for (size_t i(0); i < length; ++i) {
-		flag = true;
-		for (size_t j(1); j < length - i; ++j) {
-			if (data[j-1] <= data[j]) continue;	// 小さい順
-			tmp = data[j-1];
-			data[j-1] = data[j];
-			data[j] = tmp;
-			flag = false;
+	while (k < h) {
+		h = k;
+		for (size_t i(1); i < h; ++i) {
+			if (data[i-1] <= data[i]) continue;	// 小さい順
+			std::swap(data[i-1], data[i]);
+			k = i;
 		}
-		if (flag) break;
 	}
 }
 
