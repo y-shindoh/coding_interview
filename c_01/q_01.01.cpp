@@ -16,10 +16,8 @@
 
 #include <cstddef>
 #include <cstdio>
-#include <cstring>
+#include <bitset>
 #include <cassert>
-
-#define	BUFFER_LENGTH	((size_t)0x100)
 
 /**
  * 文字列中に同一文字があるか否かを確認
@@ -30,19 +28,17 @@
  * @note	最悪計算量は O(m)。ただし m は BUFFER_LENGTH か入力文字列の長さの大きい方。
  */
 bool
-check_duplicated_letter(bool buffer[BUFFER_LENGTH],
-						const char* string)
+check_duplicated_letter(const char* string)
 {
-	assert(buffer);
 	assert(string);
 
-	std::memset((void*)buffer, 0, sizeof(bool) * BUFFER_LENGTH);
+	std::bitset<0x100> bitset;
 	size_t i;
 
 	while (*string) {
 		i = (size_t)*string++;
-		if (buffer[i]) return true;
-		buffer[i] = true;
+		if (bitset[i]) return true;
+		bitset[i] = true;
 	}
 
 	return false;
@@ -53,11 +49,10 @@ check_duplicated_letter(bool buffer[BUFFER_LENGTH],
  */
 int main()
 {
-	bool buffer[BUFFER_LENGTH];
 	const char sample[][1024] = {"AbCdBC.", "AbCdBc."};
 
 	for (size_t i(0); i < sizeof(sample)/sizeof(sample[0]); ++i) {
-		if (check_duplicated_letter(buffer, sample[i])) {
+		if (check_duplicated_letter(sample[i])) {
 			std::printf("FOUND     ");
 		}
 		else {
