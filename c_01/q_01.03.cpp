@@ -52,7 +52,7 @@ check_anagram(int buffer[BUFFER_LENGTH],
 	if (!n) return false;	// 長さが異なる
 
 	for (size_t j(0); j < BUFFER_LENGTH; ++j) {
-		if (buffer[j]) return false;
+		if (0 < buffer[j]) return false;
 	}
 
 	return true;
