@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cassert>
+#include <algorithm>
 
 /**
  * 文字列を破壊的に反転
@@ -30,12 +31,9 @@ reverse(char* s)
 
 	int i(0);
 	int j = (int)std::strlen(s) - 1;	// 符号あり整数の方が安全
-	char c;
 
 	while (i < j) {
-		c = s[i];
-		s[i] = s[j];
-		s[j] = c;
+		std::swap(s[i], s[j]);
 		++i, --j;
 	}
 }
