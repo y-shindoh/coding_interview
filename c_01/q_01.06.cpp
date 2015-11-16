@@ -16,8 +16,6 @@
 #include <cstdio>
 #include <cassert>
 
-#define	WIDTH	((size_t)4)
-
 typedef int Pixel;	///< 1ピクセルを表現する型
 
 /**
@@ -53,7 +51,7 @@ rotate_matrix(Pixel matrix[N][N])
 
 	Pixel p;
 
-	for (size_t i(0); i < N / 2; ++i) {
+	for (size_t i(0); i < (N + 1) / 2; ++i) {	// Nが奇数の時を考慮
 		for (size_t j(0); j < N / 2; ++j) {
 			p = matrix[i][j];
 			matrix[i][j] = matrix[N-j-1][i];
@@ -64,6 +62,9 @@ rotate_matrix(Pixel matrix[N][N])
 	}
 }
 
+#define	WIDTH	((size_t)4)
+//#define	WIDTH	((size_t)3)
+
 /**
  * 動作確認用コマンド
  */
@@ -73,6 +74,9 @@ int main()
 								{5, 6, 7, 8},
 								{9, 10, 11, 12},
 								{13, 14, 15, 16}};
+//	int matrix[WIDTH][WIDTH] = {{1, 2, 3},
+//								{4, 5, 6},
+//								{7, 8, 9}};
 
 	std::printf(">>>> before\n");
 	print_matrix<WIDTH>(matrix);
