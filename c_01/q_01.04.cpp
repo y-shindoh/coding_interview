@@ -60,7 +60,7 @@ replace_ws(char* s,
 	assert(r);
 
 	const int l = (int)std::strlen(r);
-	int i = (int)std::strlen(s);
+	int i = (int)std::strlen(s);	// 問題設定によっては引数となる
 	int j = i + (l - 1) * (int)count_ws(s);
 
 	while (0 <= i) {
