@@ -38,7 +38,7 @@ check_duplicated_letter(const char* string)
 	while (*string) {
 		i = (size_t)*string++;
 		if (bitset[i]) return true;
-		bitset[i] = true;
+		bitset.set(i);
 	}
 
 	return false;
