@@ -28,37 +28,29 @@ Node<TYPE>*
 Relocate(Node<TYPE>* node,
 		 const TYPE& data)
 {
-	Node<TYPE>* result(0);
-	Node<TYPE>* tail(0);
-	Node<TYPE>* remain(0);
-	Node<TYPE>* previous(0);
-	Node<TYPE>* next;
+	Node<TYPE>* sh(0);		// 指定値より小さな値のノードの先頭
+	Node<TYPE>* st(0);		// 指定値より小さな値のノードの末尾
+	Node<TYPE>* bh(0);		// 指定値以上の値のノードの先頭
+	Node<TYPE>* n;
 
 	while (node) {
-		next = node->get_next();
-		if (data <= node->get_data()) {
-			previous = node;
-			if (!remain) remain = node;
+		n = node->get_next();
+		if (node->get_data() < data) {
+			node->set_next(sh);
+			sh = node;
+			if (!st) st = node;
 		}
 		else {
-			if (previous) {
-				previous->set_next(next);
-			}
-			node->set_next(0);
-			if (!result) result = node;
-			if (tail) tail->set_next(node);
-			tail = node;
+			node->set_next(bh);
+			bh = node;
 		}
-		node = next;
+		node = n;
 	}
 
-	if (result) {
-		tail->set_next(remain);
-		return result;
-	}
-	else {
-		return remain;
-	}
+	if (!st) return bh;
+
+	st->set_next(bh);
+	return sh;
 }
 
 /**
