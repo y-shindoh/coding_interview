@@ -21,7 +21,7 @@
  * @param[in]	node	連結リストの先頭ノード
  * @param[in]	k	位置
  * @return	末尾からk番目のノード (存在しない場合は @a 0 が返却される)
- * @note	末尾のノードを0番目として数える。
+ * @note	末尾のノードを1番目として数える。
  * @note	計算量は O(n)。ただし n は引数 @a node のノード数。
  */
 template<typename TYPE>
@@ -30,19 +30,16 @@ FindLastNthNode(const Node<TYPE>* node,
 				size_t n)
 {
 	const Node<TYPE>* right(node);
-	const Node<TYPE>* left(0);
+	const Node<TYPE>* left(node);
 
 	for (size_t i(0); i < n; ++i) {
-		if (!right) break;
+		if (!right) return 0;
 		right = right->get_next();
 	}
 
-	if (right) {
-		left = node;
-		while (right->get_next()) {
-			right = right->get_next();
-			left = left->get_next();
-		}
+	while (right) {
+		right = right->get_next();
+		left = left->get_next();
 	}
 
 	return left;
