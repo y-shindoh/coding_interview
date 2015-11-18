@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 
 /**
  * 文字列が他方の文字列の回転になっているかを確認
@@ -34,6 +35,10 @@ check_rotated(const char* s1,
 			  const char* s2,
 			  char* buffer)
 {
+	assert(s1);
+	assert(s2);
+	assert(buffer);
+
 	if (std::strlen(s1) == std::strlen(s2)) {
 		std::strcpy(buffer, s1);
 		std::strcat(buffer, s1);
