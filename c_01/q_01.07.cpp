@@ -14,8 +14,8 @@
 
 #include <cstddef>
 #include <cstdio>
-#include <cstring>
 #include <cassert>
+#include <bitset>
 
 /**
  * 行列を表示 (動作確認用)
@@ -44,8 +44,8 @@ class ReplaceMatrix
 {
 private:
 
-	bool row_[H];		///< 0のあった行
-	bool column_[W];	///< 0のあった列
+	std::bitset<H> row_;	///< 0のあった行
+	std::bitset<W> column_;	///< 0のあった列
 
 	/**
 	 * 行列を置換する準備 (補助メソッド)
@@ -57,14 +57,14 @@ private:
 		{
 			assert(matrix);
 
-			std::memset((void*)row_, 0, sizeof(bool) * H);
-			std::memset((void*)column_, 0, sizeof(bool) * W);
+			row_.reset();
+			column_.reset();
 
 			for (size_t i(0); i < H; ++i) {
 				for (size_t j(0); j < W; ++j) {
 					if (matrix[i][j]) continue;
-					row_[i] = true;
-					column_[j] = true;
+					row_.set(i);
+					column_.set(j);
 				}
 			}
 		}
