@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <cassert>
 #include "list.hpp"
 
 /**
@@ -29,6 +30,8 @@ size_t
 List2Integer(const Node<TYPE>* node,
 			 bool direction)
 {
+	assert(node);
+
 	size_t r(0);
 
 	if (direction) {
@@ -101,6 +104,9 @@ ListSum(const Node<TYPE>* input_1,
 		const Node<TYPE>* input_2,
 		bool direction = true)
 {
+	assert(input_1);
+	assert(input_2);
+
 	size_t n1 = List2Integer<TYPE>(input_1, direction);
 	size_t n2 = List2Integer<TYPE>(input_2, direction);
 
