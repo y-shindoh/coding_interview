@@ -69,6 +69,7 @@ public:
 	/**
 	 * デストラクタ
 	 */
+	virtual
 	~SetOfStacks()
 		{
 			size_t l = stack_.size();
