@@ -27,47 +27,48 @@
 /**
  * ハノイの塔の問題解決器
  */
+template<typename TYPE>
 class HanoiSolver
 {
 private:
 
-	size_t count_;	///< おもりの移動回数
-	std::vector<unsigned int> towers_[3];	///< 3つの塔 (スタック)
+	size_t count_;					///< おもりの移動回数
+	std::vector<TYPE> towers_[3];	///< 3つの塔 (スタック)
 
 	/**
 	 * ハノイの塔の問題を解決 (補助関数)
 	 * @param[in]	n	移動させるおもりの数
-	 * @param[in]	f	移動元の塔
-	 * @param[in]	w	作業用の塔
+	 * @param[in]	s	移動元の塔
 	 * @param[in]	d	移動先の塔
+	 * @param[in]	w	作業用の塔
 	 * @note	呼び出し時に各nに対して塔が初期状態 (説明が難しい) であれば、
 				関数が返るときには、
-				@a f の塔から @a d の塔に @a n 個の重りが移動している。
+				@a s の塔から @a d の塔に @a n 個の重りが移動している。
 	 */
 	void
 	execute(int n,
-			int f,
-			int w,
-			int d)
+			int s,
+			int d,
+			int w)
 		{
 			if (n <= 0) {
 				std::printf("----\n");
 				return;
 			}
 
-			// fからwにn-1枚を移動
-			execute(n - 1, f, d, w);
+			// sからwにn-1枚を移動 (sには最後の1枚が残り、dは空)
+			execute(n - 1, s, w, d);
 
 			print();
 			++count_;
 
 			// nに対して残りの1枚を移動
-			unsigned int v = towers_[f].back();
-			towers_[f].pop_back();
+			TYPE v = towers_[s].back();
+			towers_[s].pop_back();
 			towers_[d].push_back(v);
 
 			// wからdにn-1枚を移動
-			execute(n - 1, w, f, d);
+			execute(n - 1, w, d, s);
 		}
 
 	/**
@@ -81,7 +82,7 @@ private:
 				size_t l = towers_[i].size();
 				for (size_t j(0); j < l; ++j) {
 					if (0 < j) std::printf(", ");
-					std::printf("%u", towers_[i][j]);
+					std::printf("%lu", (size_t)towers_[i][j]);
 				}
 				std::printf("\n");
 			}
@@ -100,13 +101,12 @@ public:
 			count_ = 0;
 
 			for (int i(0); i < 3; ++i) {
+				towers_[i].clear();
 				towers_[i].reserve(n);
 			}
 
-			int j;
 			for (int i(0); i < n; ++i) {
-				j = n - i;
-				towers_[0].push_back(j);
+				towers_[0].push_back((TYPE)(n - i));
 			}
 
 			execute(n, 0, 1, 2);
@@ -122,7 +122,7 @@ public:
  */
 int main(void)
 {
-	HanoiSolver solver;
+	HanoiSolver<unsigned short> solver;
 
 	solver.execute(4);
 
