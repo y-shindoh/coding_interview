@@ -28,46 +28,30 @@
  * @param[in,out]	stack	ソーティング対象のスタック
  * @param[out]	buffer	作業領域
  * @note	計算量は O(n^2)。
- * @note	書籍では挿入ソートを説明していたが、ここでは選択ソートで実装する。
  */
 template<typename TYPE>
 void
 sort_stack(std::vector<TYPE>& stack,
 		   std::vector<TYPE>& buffer)
 {
-	int i, k;
-	int h(0);	// 位置確定済み要素数
-	int l(0);	// 要素の総数
-	TYPE data, max;
+	TYPE data, tmp;
 
-	buffer.clear();
+	while (!stack.empty()) {
+		tmp = stack.back();
+		stack.pop_back();
+		buffer.push_back(tmp);
+	}
 
-	do {
-		i = 0;
-		// 最大値の探索
-		k = -1;
-		while (h == 0 || i + h < l) {
-			data = stack.back();
+	while (!buffer.empty()) {
+		data = buffer.back();
+		buffer.pop_back();
+		while (!stack.empty() && data > stack.back()) {
+			tmp = stack.back();
 			stack.pop_back();
-			if (k < 0 || max < data) {
-				k = i;
-				max = data;
-			}
-			buffer.push_back(data);
-			if (h == 0) ++l;
-			++i;
-			if (stack.empty()) break;
+			buffer.push_back(tmp);
 		}
-		// 最大値の格納
-		stack.push_back(max);
-		// その他要素の格納
-		while (0 <= --i) {
-			data = buffer.back();
-			buffer.pop_back();
-			if (k == i) continue;	// 最大値をスキップ
-			stack.push_back(data);
-		}
-	} while (++h < l);
+		stack.push_back(data);
+	}
 }
 
 /**
