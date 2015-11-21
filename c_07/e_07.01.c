@@ -15,16 +15,14 @@
  * 素数かどうか確認
  * @param[in]	number	素数候補
  * @return	true: 素数, false: 素数でない
- * @note	引数 @a number に2未満の数値は入れないこと。
  */
 _Bool
 is_prime(size_t number)
 {
-	assert(1 < number);
-
+	if (number < 2) return false;
 	if (2 < number && number % 2 == 0) return false;
 
-	for (size_t i = 3; i < number; i +=2) {
+	for (size_t i = 3; i * i <= number; i +=2) {
 		if (number % i) continue;
 		return false;
 	}
