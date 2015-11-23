@@ -33,34 +33,32 @@ private:
 	TYPE data_;					///< 保持するデータ
 
 	/**
-	 * 木の深さの高低差が1以下か確認 (補助メソッド)
-	 * @param[in]	depth	ノードの深さ
-	 * @param[in,out]	shortest	最も浅い葉の深さ
-	 * @param[in,out]	longest	最も深い葉の深さ
-	 * @return	true: 1以下, false: 2以上
+	 * 木の深さを算出
+	 * @return	木の深さ (最も深い子ノードから算出)
 	 * @note	最悪計算量は O(n)。ただし n は部分木のノードの総数。
 	 * @note	深さ優先探索で実装している。
 	 */
-	bool
-	is_balanced(size_t depth,
-				size_t& shortest,
-				size_t& longest) const
+	int
+	get_height() const
 		{
-			bool flag;
+			int left_height(0);
+			int right_height(0);
 
-			for (size_t i(0); i < 2; ++i) {
-				if (children_[i]) {
-					flag = children_[i]->is_balanced(depth+1, shortest, longest);
-					if (!flag) return false;
-				}
-				else {
-					if (depth < shortest) shortest = depth;
-					if (longest < depth) longest = depth;
-					if (shortest + 1 < longest) return false;
-				}
+			if (children_[0]) {
+				left_height = children_[0]->get_height();
+				if (left_height < 0) return -1;
 			}
 
-			return true;
+			if (children_[1]) {
+				right_height = children_[1]->get_height();
+				if (right_height < 0) return -1;
+			}
+
+			int diff = left_height - right_height;
+			if (diff < 0) diff *= -1;
+
+			if (1 < diff) return -1;
+			return std::max(left_height, right_height) + 1;
 		}
 
 	/**
@@ -279,16 +277,17 @@ public:
 #endif	// _USE_TRACE_BACK_TREE_
 
 	/**
-	 * 木の深さの高低差が1以下か確認 (問題4.1の解答)
-	 * @return	true: 1以下, false: 2以上
+	 * 木の深さのバランスがとれているか確認 (問題4.1の解答)
+	 * @return	true: とれている, false: とれていない
 	 * @note	最悪計算量は O(n)。ただし n は木のノードの総数。
+	 * @note	任意のノードの2つの子の深さの差が1以下であれば、
+				バランスがとれているとする。
+				なお、ノードの深さは最も深いその子孫を基準に考える。
 	 */
 	bool
 	is_balanced() const
 		{
-			size_t s = ~((size_t)0);
-			size_t l(0);
-			return is_balanced(0, s, l);
+			return get_height() != -1;
 		}
 
 	/**
