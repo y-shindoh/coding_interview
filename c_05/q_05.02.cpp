@@ -57,7 +57,7 @@ int main()
 			std::printf("%G => '%s'\n", values[i], buffer);
 		}
 		else {
-			std::printf("%G => ERROR\n", values[i]);
+			std::printf("%G => ERROR (%s)\n", values[i], buffer);
 		}
 	}
 
