@@ -23,10 +23,9 @@
  * 整数をあるビットからあるビットまで他の整数のビットで置換
  * @param[in]	base	置換元の整数
  * @param[in]	add	置換先の整数
- * @param[in]	i	置換開始ビットのインデックス
- * @param[in]	j	置換終了ビットのインデックス
+ * @param[in]	i	置換開始ビットのインデックス (0始まり)
+ * @param[in]	j	置換終了ビットのインデックス (0始まり)
  * @return	置換後の整数
- * @note	little endian用の実装であることに注意。
  */
 unsigned int
 replace_bits(unsigned int base,
@@ -34,8 +33,8 @@ replace_bits(unsigned int base,
 			 size_t i,
 			 size_t j)
 {
-	base &= ((((size_t)1 << i) - (size_t)1) | (~((size_t)0) << (j + 1)));
-	return base | (~(~((size_t)0) << (j + 1)) & (add << i));
+	base &= ~(~(size_t)0 << i) | (~(size_t)0 << (j + 1));
+	return base | ((add << i) & ~(~(size_t)0 << (j + 1)));	// 最後のマスクは不要
 }
 
 /**
