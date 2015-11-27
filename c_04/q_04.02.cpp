@@ -88,12 +88,12 @@ search_bfs(const std::vector< std::set<size_t> >& table,
 	size_t i;
 
 	buffer.push_back(from);
+	done.insert(from);
 
 	while (!buffer.empty()) {
 		i = buffer.front();
 		buffer.pop_front();
 		for (it = table[i].begin(); it != table[i].end(); ++it) {
-			if (*it == from) continue;
 			if (*it == to) return true;
 			if (done.find(*it) != done.end()) continue;
 			buffer.push_back(*it);
