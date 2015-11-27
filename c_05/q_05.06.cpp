@@ -25,7 +25,7 @@ template<typename TYPE>
 TYPE
 change_adjoining_bits(TYPE value)
 {
-	return (((TYPE)0xAAAAAAAAAAAAAAAA & value) >> 1) | (((TYPE)0x5555555555555555 & value) << 1);
+	return ((value >> 1) & (TYPE)0x5555555555555555) | ((value << 1) & (TYPE)0xAAAAAAAAAAAAAAAA);
 }
 
 /**
