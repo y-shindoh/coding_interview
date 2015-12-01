@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <cassert>
 #include "bits_operation.hpp"
 
 /**
@@ -27,17 +28,20 @@ template<typename TYPE>
 TYPE
 find_next(TYPE value)
 {
+	assert(0 < value);
+	assert(value < ~(TYPE)0);
+
 	size_t o(0), i(0);
 
 	// ビット"01"の並びを探索
-	while (!(value & ((TYPE)1 << o))) ++o;	// 先頭のビット0
+	while (!(value & ((TYPE)1 << o))) ++o;		// 先頭のビット0
 	while (value & ((TYPE)1 << (o + i))) ++i;	// 先頭に準ずるビット1
 
 	assert(o + i < 32);
 
 	value |= (TYPE)1 << (o + i);
 	--i, ++o;	// 上記で移動したビット1の分を調整 (oは理解のため)
-	value &= (~(TYPE)0 << (o + i));
+	value &= ~(TYPE)0 << (o + i);
 	value |= ((TYPE)1 << i) - (TYPE)1;
 
 	return value;
@@ -60,8 +64,8 @@ find_previous(TYPE value)
 	size_t i(0), o(0);
 
 	// ビット"10"の並びを探索
-	while (value & ((TYPE)1 << i)) ++i;	// 先頭のビット1
-	while (!((value) & ((TYPE)1 << (i + o)))) ++o;	// 先頭に準ずるビット0
+	while (value & ((TYPE)1 << i)) ++i;				// 先頭のビット1
+	while (!(value & ((TYPE)1 << (i + o)))) ++o;	// 先頭に準ずるビット0
 
 	assert(i + o < 32);
 
