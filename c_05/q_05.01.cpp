@@ -33,7 +33,7 @@ replace_bits(unsigned int base,
 			 size_t i,
 			 size_t j)
 {
-	base &= ~(~(size_t)0 << i) | (~(size_t)0 << (j + 1));
+	base &= ~(~(size_t)0 << i) | (~(size_t)0 << (j + 1));	// i, ..., j の各ビットは0
 	return base | ((add << i) & ~(~(size_t)0 << (j + 1)));	// 最後のマスクは不要
 }
 
