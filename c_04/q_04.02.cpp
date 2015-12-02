@@ -93,8 +93,8 @@ search_bfs(const std::vector< std::set<size_t> >& table,
 	while (!buffer.empty()) {
 		i = buffer.front();
 		buffer.pop_front();
+		if (i == to) return true;
 		for (it = table[i].begin(); it != table[i].end(); ++it) {
-			if (*it == to) return true;
 			if (done.find(*it) != done.end()) continue;
 			buffer.push_back(*it);
 			done.insert(*it);
